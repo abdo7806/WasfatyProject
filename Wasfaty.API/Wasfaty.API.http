@@ -1,0 +1,6 @@
+@Wasfaty.API_HostAddress = http://localhost:5127
+
+GET {{Wasfaty.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
