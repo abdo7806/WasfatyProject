@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
+using Wasfaty.Application.Constants;
 using Wasfaty.Application.Interfaces;
 using Wasfaty.Application.Interfaces.Repositories;
 using Wasfaty.Infrastructure.Data;
@@ -20,6 +21,19 @@ builder.Services.AddCors(options =>
                   .AllowAnyMethod()  // «·”„«Õ »√Ì ÿ—Ìﬁ… (GET, POST, PUT, DELETE)
                   .AllowAnyHeader(); // «·”„«Õ »√Ì —√” (headers)
         });
+});
+
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("AdminRole", policy => policy.RequireRole(Roles.Admin));
+    options.AddPolicy("DoctorRole", policy => policy.RequireRole(Roles.Doctor));
+    options.AddPolicy("PatientRole", policy => policy.RequireRole(Roles.Patient));
+    options.AddPolicy("PharmacistRole", policy => policy.RequireRole(Roles.Pharmacist));
+
+    options.AddPolicy("AdminOrDoctorRole", policy =>
+       policy.RequireAssertion(context =>
+           context.User.IsInRole(Roles.Admin) || context.User.IsInRole(Roles.Doctor)));
+
 });
 
 // ≈÷«›… «·Œœ„« 

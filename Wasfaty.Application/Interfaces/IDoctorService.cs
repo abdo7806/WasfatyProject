@@ -30,5 +30,10 @@ namespace Wasfaty.Application.Interfaces
         /// جلب طبيب بواسطة المعرف
         /// </summary>
         Task<DoctorDto> GetDoctorByIdAsync(int doctorId);
+
+        /// <summary>
+        /// UserId جلب طبيب بواسطة المعرف المستخدم
+        /// </summary>
+        Task<DoctorDto> GetDoctorByUserIdAsync(int userId);
     }
 }

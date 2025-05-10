@@ -12,7 +12,7 @@ using Wasfaty.Application.Constants;
 
 [Route("api/[controller]")]
 [ApiController]
-[Authorize(Roles = Roles.Admin)]
+//[Authorize(Roles = Roles.Admin)]
 public class DoctorController : ControllerBase
 {
     private readonly IDoctorService _doctorService;
@@ -173,4 +173,26 @@ public class DoctorController : ControllerBase
 
   
     }
+
+    // GET: api/doctor/{id}
+    [HttpGet("GetDoctorByUserId/{UserId}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<DoctorDto>> GetDoctorByUserId(int UserId)
+    {
+        if (UserId < 1)
+        {
+            return BadRequest("Invalid ID.");
+        }
+
+        var doctor = await _doctorService.GetDoctorByUserIdAsync(UserId);
+        if (doctor == null)
+        {
+            return NotFound($"Doctor with UserId {UserId} not found.");
+        }
+        return Ok(doctor);
+    }
+
+
 }

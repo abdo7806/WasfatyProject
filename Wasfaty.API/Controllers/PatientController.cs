@@ -12,7 +12,9 @@ using Wasfaty.Application.Constants;
 
 [Route("api/PatientController")]
 [ApiController]
-[Authorize(Roles = Roles.Admin)]
+
+//[Authorize]
+
 public class PatientController : ControllerBase
 {
     private readonly IPatientService _patientService;
@@ -23,6 +25,8 @@ public class PatientController : ControllerBase
         _patientService = patientService;
         _userService = userService;
     }
+
+   // [Authorize(Roles = Roles.Admin + "," + Roles.Doctor)] // استثناء
 
     // GET: api/patient
     [HttpGet("All", Name = "GetAllPatients")]
@@ -38,6 +42,8 @@ public class PatientController : ControllerBase
         }
         return Ok(patients);
     }
+
+    [Authorize(Roles = Roles.Admin)]
 
     // GET: api/patient/{id}
     [HttpGet("{id}", Name = "GetPatientById")]
@@ -58,6 +64,9 @@ public class PatientController : ControllerBase
         }
         return Ok(patient);
     }
+
+
+    [Authorize(Roles = Roles.Admin)]
 
     // POST: api/patient
     //   [Authorize(Roles = "Admin")] // فقط المسؤولين يمكنهم إنشاء مرضى
@@ -100,6 +109,8 @@ public class PatientController : ControllerBase
         return CreatedAtRoute("GetPatientById", new { id = patient.Id }, patient);
     }
 
+    [Authorize(Roles = Roles.Admin)]
+
     // PUT: api/patient/{id}
     [HttpPut("{id}", Name = "UpdatePatient")]
     [ProducesResponseType(StatusCodes.Status200OK)]
@@ -119,6 +130,8 @@ public class PatientController : ControllerBase
         }
         return Ok(patient);
     }
+
+    [Authorize(Roles = Roles.Admin)]
 
     // DELETE: api/patient/{id}
     [HttpDelete("{id}", Name = "DeletePatient")]

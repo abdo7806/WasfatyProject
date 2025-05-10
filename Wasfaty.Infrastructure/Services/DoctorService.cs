@@ -141,4 +141,39 @@ public class DoctorService : IDoctorService
     {
        return await _doctorRepository.DeleteAsync(id);
     }
+
+    public async Task<DoctorDto> GetDoctorByUserIdAsync(int userId)
+    {
+
+        var doctor = await _doctorRepository.GetByUserIdAsync(userId);
+        if (doctor != null)
+        {
+            return new DoctorDto
+            {
+                Id = doctor.Id,
+                UserId = doctor.UserId,
+                MedicalCenterId = doctor.MedicalCenterId,
+                Specialization = doctor.Specialization,
+                LicenseNumber = doctor.LicenseNumber,
+                User = new UserDto
+                {
+                    Id = doctor.User.Id,
+                    FullName = doctor.User.FullName,
+                    Email = doctor.User.Email,
+                    Role = (UserRoleEnum)doctor.User.RoleId,
+                    CreatedAt = doctor.User.CreatedAt,
+
+                },
+                MedicalCenter = new MedicalCenterDto
+                {
+                    Id = doctor.MedicalCenter.Id,
+                    Name = doctor.MedicalCenter.Name,
+                    Address = doctor.MedicalCenter.Address,
+                    Phone = doctor.MedicalCenter.Phone,
+                }
+
+            };
+        }
+        return null;
+    }
 }

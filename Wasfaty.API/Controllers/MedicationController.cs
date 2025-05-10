@@ -7,7 +7,8 @@ using Wasfaty.Application.Interfaces;
 
 [Route("api/[controller]")]
 [ApiController]
-[Authorize(Roles = Roles.Admin)]
+
+[Authorize]
 
 public class MedicationController : ControllerBase
 {
@@ -18,6 +19,7 @@ public class MedicationController : ControllerBase
         _medicationService = medicationService;
     }
 
+    [Authorize(Roles = Roles.Admin + "," + Roles.Doctor)] // استثناء
     // GET: api/medications
     [HttpGet("All", Name = "GetAllMedication")]
     [ProducesResponseType(StatusCodes.Status200OK)]
@@ -33,6 +35,8 @@ public class MedicationController : ControllerBase
 
         return Ok(medications);
     }
+
+    [Authorize(Roles = Roles.Admin)]
 
     // GET: api/medications/{id}
     [HttpGet("{id}", Name = "GetMedicationById")]
@@ -56,6 +60,8 @@ public class MedicationController : ControllerBase
         return Ok(medication);
     }
 
+    [Authorize(Roles = Roles.Admin)]
+
     // POST: api/medications
     [HttpPost("CreateMedication")]
     [ProducesResponseType(StatusCodes.Status201Created)]
@@ -75,6 +81,8 @@ public class MedicationController : ControllerBase
 
         return CreatedAtRoute("GetMedicationById", new { id = createdMedication.Id }, createdMedication);
     }
+
+    [Authorize(Roles = Roles.Admin)]
 
     // PUT: api/medications/{id}
     [HttpPut("{id}", Name = "UpdateMedication")]
@@ -96,6 +104,8 @@ public class MedicationController : ControllerBase
         }
         return Ok(updatedMedication);
     }
+
+    [Authorize(Roles = Roles.Admin)]
 
     // DELETE: api/medications/{id}
     [HttpDelete("{id}", Name = "DeleteMedication")]

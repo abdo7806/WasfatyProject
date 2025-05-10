@@ -49,6 +49,8 @@ public class DoctorRepository : IDoctorRepository
             .FirstOrDefaultAsync(d => d.Id == id);
     }
 
+
+
     public async Task<Doctor> AddAsync(Doctor doctor)
     {
         await _context.Doctors.AddAsync(doctor);
@@ -74,5 +76,13 @@ public class DoctorRepository : IDoctorRepository
         }
 
         return false;
+    }
+
+    public async Task<Doctor?> GetByUserIdAsync(int userId)
+    {
+        return await _context.Doctors
+            .Include(d => d.MedicalCenter)
+            .Include(d => d.User)
+            .FirstOrDefaultAsync(d => d.UserId == userId);
     }
 }

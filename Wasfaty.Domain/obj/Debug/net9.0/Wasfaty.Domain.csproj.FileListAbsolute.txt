@@ -9,3 +9,15 @@ D:\كورسات ابو هد هود\مشاريع ديسك توب\WasfatyProject2\
 D:\كورسات ابو هد هود\مشاريع ديسك توب\WasfatyProject2\Wasfaty.Domain\obj\Debug\net9.0\refint\Wasfaty.Domain.dll
 D:\كورسات ابو هد هود\مشاريع ديسك توب\WasfatyProject2\Wasfaty.Domain\obj\Debug\net9.0\Wasfaty.Domain.pdb
 D:\كورسات ابو هد هود\مشاريع ديسك توب\WasfatyProject2\Wasfaty.Domain\obj\Debug\net9.0\ref\Wasfaty.Domain.dll
+D:\كورسات ابو هد هود\مشاريع github\WasfatyProject2\Wasfaty.Domain\bin\Debug\net9.0\Wasfaty.Domain.deps.json
+D:\كورسات ابو هد هود\مشاريع github\WasfatyProject2\Wasfaty.Domain\bin\Debug\net9.0\Wasfaty.Domain.dll
+D:\كورسات ابو هد هود\مشاريع github\WasfatyProject2\Wasfaty.Domain\bin\Debug\net9.0\Wasfaty.Domain.pdb
+D:\كورسات ابو هد هود\مشاريع github\WasfatyProject2\Wasfaty.Domain\obj\Debug\net9.0\Wasfaty.Domain.GeneratedMSBuildEditorConfig.editorconfig
+D:\كورسات ابو هد هود\مشاريع github\WasfatyProject2\Wasfaty.Domain\obj\Debug\net9.0\Wasfaty.Domain.AssemblyInfoInputs.cache
+D:\كورسات ابو هد هود\مشاريع github\WasfatyProject2\Wasfaty.Domain\obj\Debug\net9.0\Wasfaty.Domain.AssemblyInfo.cs
+D:\كورسات ابو هد هود\مشاريع github\WasfatyProject2\Wasfaty.Domain\obj\Debug\net9.0\Wasfaty.Domain.csproj.CoreCompileInputs.cache
+D:\كورسات ابو هد هود\مشاريع github\WasfatyProject2\Wasfaty.Domain\obj\Debug\net9.0\Wasfaty.Domain.sourcelink.json
+D:\كورسات ابو هد هود\مشاريع github\WasfatyProject2\Wasfaty.Domain\obj\Debug\net9.0\Wasfaty.Domain.dll
+D:\كورسات ابو هد هود\مشاريع github\WasfatyProject2\Wasfaty.Domain\obj\Debug\net9.0\refint\Wasfaty.Domain.dll
+D:\كورسات ابو هد هود\مشاريع github\WasfatyProject2\Wasfaty.Domain\obj\Debug\net9.0\Wasfaty.Domain.pdb
+D:\كورسات ابو هد هود\مشاريع github\WasfatyProject2\Wasfaty.Domain\obj\Debug\net9.0\ref\Wasfaty.Domain.dll
