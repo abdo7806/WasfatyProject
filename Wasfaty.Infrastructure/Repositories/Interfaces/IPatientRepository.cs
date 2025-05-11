@@ -8,4 +8,6 @@ public interface IPatientRepository
     Task<Patient> UpdateAsync(Patient patient);
     Task<bool> DeleteAsync(int id);
 
+    Task<List<Patient>> SearchPatients(string term);
+
 }

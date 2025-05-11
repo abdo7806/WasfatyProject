@@ -9,5 +9,8 @@ namespace Wasfaty.Application.Interfaces
         Task<IEnumerable<PrescriptionDto>> GetAllAsync();
         Task<PrescriptionDto> UpdateAsync(int id, CreatePrescriptionDto prescriptionDto);
         Task<bool> DeleteAsync(int id);
+
+        Task<List<PrescriptionDto>> GetByDoctorIdAsync(int doctorId);
+
     }
 }

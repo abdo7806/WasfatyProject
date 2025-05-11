@@ -113,4 +113,28 @@ public class PatientService : IPatientService
     {
        return await _patientRepository.DeleteAsync(id);
     }
+
+    public async Task<List<PatientDto>> SearchPatients(string term)
+    {
+        List<Patient> Patients = await _patientRepository.SearchPatients(term);
+
+
+        return Patients.Select(patient => new PatientDto
+        {
+            Id = patient.Id,
+            UserId = patient.UserId,
+            DateOfBirth = patient.DateOfBirth,
+            Gender = patient.Gender,
+            BloodType = patient.BloodType,
+            User = new UserDto
+            {
+                Id = patient.User.Id,
+                FullName = patient.User.FullName,
+                Email = patient.User.Email,
+                Role = (UserRoleEnum)patient.User.RoleId,
+                CreatedAt = patient.User.CreatedAt,
+            },
+
+        }).ToList(); // يتضمن الوصفات
+    }
 }

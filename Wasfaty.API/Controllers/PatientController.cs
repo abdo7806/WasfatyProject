@@ -9,6 +9,7 @@ using Wasfaty.Application.DTOs.Users;
 using Wasfaty.Application.DTOs.MedicalCenters;
 using Wasfaty.Application.DTOs.Doctors;
 using Wasfaty.Application.Constants;
+using System.Linq;
 
 [Route("api/PatientController")]
 [ApiController]
@@ -26,7 +27,7 @@ public class PatientController : ControllerBase
         _userService = userService;
     }
 
-   // [Authorize(Roles = Roles.Admin + "," + Roles.Doctor)] // استثناء
+   [Authorize(Roles = Roles.Admin + "," + Roles.Doctor)] // استثناء
 
     // GET: api/patient
     [HttpGet("All", Name = "GetAllPatients")]
@@ -40,11 +41,13 @@ public class PatientController : ControllerBase
         {
             return NotFound("No Patient Found!");
         }
+
+     
+
         return Ok(patients);
     }
 
-    [Authorize(Roles = Roles.Admin)]
-
+    [Authorize(Roles = Roles.Admin + "," + Roles.Doctor)] // استثناء
     // GET: api/patient/{id}
     [HttpGet("{id}", Name = "GetPatientById")]
     [ProducesResponseType(StatusCodes.Status200OK)]
@@ -163,4 +166,26 @@ public class PatientController : ControllerBase
         }
   
     }
+
+
+
+    // GET: api/patient
+    [HttpGet("SearchPatients/{term}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<List<PatientDto>>> SearchPatients(string term)
+    {
+        var patients = await _patientService.SearchPatients(term);
+
+        if (patients.Count() == 0)
+        {
+            return NotFound("No Patient Found!");
+        }
+        return Ok(patients);
+    }
+
+
+
 }
+
+

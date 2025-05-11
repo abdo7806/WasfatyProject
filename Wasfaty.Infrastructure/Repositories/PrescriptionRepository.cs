@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection.Metadata.Ecma335;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -57,5 +58,17 @@ public class PrescriptionRepository : IPrescriptionRepository
         }
 
         return false;
+    }
+
+    public async Task<List<Prescription>> GetByDoctorIdAsync(int doctorId)
+    {
+
+  
+        return await _context.Prescriptions
+            .Include(p => p.PrescriptionItems)
+            .Include(p => p.Doctor.User)
+            .Include(p => p.Patient.User)
+            .Where(p => p.DoctorId == doctorId)
+            .ToListAsync(); ;
     }
 }

@@ -181,4 +181,61 @@ public class PrescriptionService : IPrescriptionService
     {
        return await _prescriptionRepository.DeleteAsync(id);
     }
+
+    public async Task<List<PrescriptionDto>> GetByDoctorIdAsync(int doctorId)
+    {
+        var prescriptions = await _prescriptionRepository.GetByDoctorIdAsync(doctorId);
+
+        return prescriptions.Select(p => new PrescriptionDto
+        {
+            Id = p.Id,
+            DoctorId = p.DoctorId,
+            PatientId = p.PatientId,
+            IssuedDate = p.IssuedDate,
+            IsDispensed = p.IsDispensed,
+            Doctor = new DoctorDto
+            {
+                Id = p.Doctor.Id,
+                UserId = p.Doctor.UserId,
+                MedicalCenterId = p.Doctor.MedicalCenterId,
+                Specialization = p.Doctor.Specialization,
+                LicenseNumber = p.Doctor.LicenseNumber,
+                User = new UserDto
+                {
+                    Id = p.Doctor.User.Id,
+                    FullName = p.Doctor.User.FullName,
+                    Email = p.Doctor.User.Email,
+                    Role = (UserRoleEnum)p.Doctor.User.RoleId,
+                    CreatedAt = p.Doctor.User.CreatedAt,
+                },
+
+            },
+            Patient = new PatientDto
+            {
+                Id = p.Patient.Id,
+                UserId = p.Patient.UserId,
+                Gender = p.Patient.Gender,
+                BloodType = p.Patient.BloodType,
+                DateOfBirth = p.Patient.DateOfBirth,
+                User = new UserDto
+                {
+                    Id = p.Patient.User.Id,
+                    FullName = p.Patient.User.FullName,
+                    Email = p.Patient.User.Email,
+                    Role = (UserRoleEnum)p.Patient.User.RoleId,
+                    CreatedAt = p.Patient.User.CreatedAt,
+                },
+            },
+            PrescriptionItems = p.PrescriptionItems.Select(pi => new PrescriptionItemDto
+            {
+                Id = pi.Id,
+                PrescriptionId = pi.PrescriptionId,
+                MedicationId = pi.MedicationId,
+                Dosage = pi.Dosage,
+                Frequency = pi.Frequency,
+                Duration = pi.Duration,
+
+            }).ToList(),
+        }).ToList();
+    }
 }

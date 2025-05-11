@@ -30,5 +30,7 @@ namespace Wasfaty.Application.Interfaces
         /// حذف مريض
         /// </summary>
         Task<bool> DeleteAsync(int id);
+
+        Task<List<PatientDto>> SearchPatients(string term);
     }
 }

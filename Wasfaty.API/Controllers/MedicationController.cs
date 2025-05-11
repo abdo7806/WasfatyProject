@@ -36,8 +36,9 @@ public class MedicationController : ControllerBase
         return Ok(medications);
     }
 
-    [Authorize(Roles = Roles.Admin)]
 
+
+    [Authorize(Roles = Roles.Admin + "," + Roles.Doctor)] // استثناء
     // GET: api/medications/{id}
     [HttpGet("{id}", Name = "GetMedicationById")]
     [ProducesResponseType(StatusCodes.Status200OK)]

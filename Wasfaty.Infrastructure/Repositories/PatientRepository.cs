@@ -117,6 +117,20 @@ namespace Wasfaty.Infrastructure.Repositories
     .FirstOrDefaultAsync(p => p.Id == id);
         }
 
+        public async Task<List<Patient>> SearchPatients(string term)
+        {
+
+            return _context.Patients
+        .Include(p => p.User)
+        .Include(p => p.Prescriptions)
+        .Where(p =>
+            p.User.FullName.Contains(term) ||
+            p.User.Email.Contains(term) ||
+            p.Id.ToString().Contains(term))
+        .ToList();
+             
+        }
+
         public async Task<Patient> UpdateAsync(Patient patient)
         {
 

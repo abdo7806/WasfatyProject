@@ -216,4 +216,23 @@ public class PrescriptionController : ControllerBase
 
 
 
+
+    // GET: api/GetByDoctorIdAsync
+    [HttpGet("GetByDoctorId/{doctorId}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<List<PrescriptionDto>>> GetByDoctorId(int doctorId)
+    {
+        var prescriptions = await _prescriptionService.GetByDoctorIdAsync(doctorId);
+
+        if (prescriptions == null || !prescriptions.Any() || prescriptions.Count() == 0)
+        {
+            return NotFound("No doctors found.");
+        }
+        return Ok(prescriptions);
+    }
+
+
+
+
 }
