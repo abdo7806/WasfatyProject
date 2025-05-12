@@ -64,6 +64,7 @@ public class MedicationService : IMedicationService
                 //Prescription = pi.Prescription,
             }).ToList(),
         }).ToList();
+    
     }
 
     public async Task<MedicationDto> CreateAsync(CreateMedicationDto medicationDto)
@@ -111,5 +112,43 @@ public class MedicationService : IMedicationService
     public async Task<bool> DeleteAsync(int id)
     {
        return await _medicationRepository.DeleteAsync(id);
+    }
+
+    public async Task<List<MedicationDto>> GetMedicationsByIdsAsync(List<int> ids)
+    {
+        try
+        {
+            if (ids == null || !ids.Any())
+                return null;
+
+
+            var medications = await _medicationRepository.GetMedicationsByIdsAsync(ids);
+            return medications.Select(m => new MedicationDto
+            {
+                Id = m.Id,
+                Name = m.Name,
+                Description = m.Description,
+                DosageForm = m.DosageForm,
+                Strength = m.Strength,
+                PrescriptionItems = m.PrescriptionItems.Select(pi => new PrescriptionItemDto
+                {
+                    Id = pi.Id,
+                    PrescriptionId = pi.PrescriptionId,
+                    MedicationId = pi.MedicationId,
+                    Dosage = pi.Dosage,
+                    Frequency = pi.Frequency,
+                    Duration = pi.Duration,
+                    // Medication = pi.Medication,
+                    //Prescription = pi.Prescription,
+                }).ToList(),
+            }).ToList();
+
+
+          
+        }
+        catch (Exception ex)
+        {
+            return null;
+        }
     }
 }

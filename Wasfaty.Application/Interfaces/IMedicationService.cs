@@ -28,5 +28,11 @@ namespace Wasfaty.Application.Interfaces
         /// الحصول على كل الأدوية
         /// </summary>
         Task<List<MedicationDto>> GetAllAsync();
+
+
+        /// <summary>
+        /// الحصول على كل الأدوية من خلال استقبال قائمة بارقام الادوية التي رح ترجع
+        /// </summary>
+        Task<List<MedicationDto>> GetMedicationsByIdsAsync(List<int> ids);
     }
 }

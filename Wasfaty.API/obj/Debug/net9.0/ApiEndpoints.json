@@ -865,6 +865,22 @@
     ]
   },
   {
+    "ContainingType": "MedicationController",
+    "Method": "GetMultipleByIds",
+    "RelativePath": "api/Medication/GetMultipleByIds",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "ids",
+        "Type": "System.String",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
     "ContainingType": "PatientController",
     "Method": "CreatePatient",
     "RelativePath": "api/PatientController",
@@ -1736,6 +1752,41 @@
     "Parameters": [
       {
         "Name": "doctorId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "System.Collections.Generic.List\u00601[[Wasfaty.Application.DTOs.Prescriptions.PrescriptionDto, Wasfaty.Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      },
+      {
+        "Type": "Microsoft.AspNetCore.Mvc.ProblemDetails",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 404
+      }
+    ]
+  },
+  {
+    "ContainingType": "PrescriptionController",
+    "Method": "GetByPatientId",
+    "RelativePath": "api/Prescription/GetByPatientId/{PatientId}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "PatientId",
         "Type": "System.Int32",
         "IsRequired": true
       }

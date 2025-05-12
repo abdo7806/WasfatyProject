@@ -71,4 +71,16 @@ public class PrescriptionRepository : IPrescriptionRepository
             .Where(p => p.DoctorId == doctorId)
             .ToListAsync(); ;
     }
+
+    public async Task<List<Prescription>> GetByPatientIdAsync(int PatientId)
+    {
+        return await _context.Prescriptions
+            .Include(p => p.PrescriptionItems)
+            .Include(p => p.Doctor.User)
+            .Include(p => p.Doctor.MedicalCenter)
+            .Include(p => p.Patient.User)
+            
+            .Where(p => p.PatientId == PatientId)
+            .ToListAsync();
+    }
 }

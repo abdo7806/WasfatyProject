@@ -235,4 +235,28 @@ public class PrescriptionController : ControllerBase
 
 
 
+    // GET: api/prescriptions
+    [HttpGet("GetByPatientId/{PatientId}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<List<PrescriptionDto>>> GetByPatientId(int PatientId)
+    {
+
+        if (PatientId < 1)
+        {
+            return BadRequest("Invalid ID.");
+        }
+        var prescriptions = await _prescriptionService.GetByPatientIdAsync(PatientId);
+
+        if (prescriptions == null || !prescriptions.Any() || prescriptions.Count() == 0)
+        {
+            return NotFound("No doctors found.");
+        }
+
+        return Ok(prescriptions);
+    }
+
+
+
+
 }

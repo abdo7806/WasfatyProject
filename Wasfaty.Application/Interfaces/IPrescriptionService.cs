@@ -1,4 +1,5 @@
-﻿using Wasfaty.Application.DTOs.Prescriptions;
+﻿using Wasfaty.Application.DTOs.Patients;
+using Wasfaty.Application.DTOs.Prescriptions;
 
 namespace Wasfaty.Application.Interfaces
 {
@@ -11,6 +12,10 @@ namespace Wasfaty.Application.Interfaces
         Task<bool> DeleteAsync(int id);
 
         Task<List<PrescriptionDto>> GetByDoctorIdAsync(int doctorId);
+
+
+        Task<List<PrescriptionDto>> GetByPatientIdAsync(int PatientId);
+
 
     }
 }

@@ -15,4 +15,7 @@ public interface IPrescriptionRepository
     Task<List<Prescription>> GetByDoctorIdAsync(int doctorId);
 
 
+    Task<List<Prescription>> GetByPatientIdAsync(int PatientId);
+
+
 }

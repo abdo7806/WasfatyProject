@@ -5,6 +5,7 @@ using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 using Wasfaty.Application.DTOs.Doctors;
+using Wasfaty.Application.DTOs.MedicalCenters;
 using Wasfaty.Application.DTOs.Patients;
 using Wasfaty.Application.DTOs.Prescriptions;
 using Wasfaty.Application.DTOs.Users;
@@ -132,6 +133,7 @@ public class PrescriptionService : IPrescriptionService
                     
                 }).ToList(),
         }).ToList();
+   
     }
 
     public async Task<PrescriptionDto> CreateAsync(CreatePrescriptionDto prescriptionDto)
@@ -208,6 +210,70 @@ public class PrescriptionService : IPrescriptionService
                     Role = (UserRoleEnum)p.Doctor.User.RoleId,
                     CreatedAt = p.Doctor.User.CreatedAt,
                 },
+
+            },
+            Patient = new PatientDto
+            {
+                Id = p.Patient.Id,
+                UserId = p.Patient.UserId,
+                Gender = p.Patient.Gender,
+                BloodType = p.Patient.BloodType,
+                DateOfBirth = p.Patient.DateOfBirth,
+                User = new UserDto
+                {
+                    Id = p.Patient.User.Id,
+                    FullName = p.Patient.User.FullName,
+                    Email = p.Patient.User.Email,
+                    Role = (UserRoleEnum)p.Patient.User.RoleId,
+                    CreatedAt = p.Patient.User.CreatedAt,
+                },
+            },
+            PrescriptionItems = p.PrescriptionItems.Select(pi => new PrescriptionItemDto
+            {
+                Id = pi.Id,
+                PrescriptionId = pi.PrescriptionId,
+                MedicationId = pi.MedicationId,
+                Dosage = pi.Dosage,
+                Frequency = pi.Frequency,
+                Duration = pi.Duration,
+
+            }).ToList(),
+        }).ToList();
+    }
+
+    public async Task<List<PrescriptionDto>> GetByPatientIdAsync(int PatientId)
+    {
+        var prescriptions = await _prescriptionRepository.GetByPatientIdAsync(PatientId);
+        return prescriptions.Select(p => new PrescriptionDto
+        {
+            Id = p.Id,
+            DoctorId = p.DoctorId,
+            PatientId = p.PatientId,
+            IssuedDate = p.IssuedDate,
+            IsDispensed = p.IsDispensed,
+            Doctor = new DoctorDto
+            {
+                Id = p.Doctor.Id,
+                UserId = p.Doctor.UserId,
+                MedicalCenterId = p.Doctor.MedicalCenterId,
+                Specialization = p.Doctor.Specialization,
+                LicenseNumber = p.Doctor.LicenseNumber,
+                User = new UserDto
+                {
+                    Id = p.Doctor.User.Id,
+                    FullName = p.Doctor.User.FullName,
+                    Email = p.Doctor.User.Email,
+                    Role = (UserRoleEnum)p.Doctor.User.RoleId,
+                    CreatedAt = p.Doctor.User.CreatedAt,
+                },
+
+                MedicalCenter = new MedicalCenterDto
+                {
+                    Id = p.Doctor.MedicalCenter.Id,
+                    Name = p.Doctor.MedicalCenter.Name,
+                    Address = p.Doctor.MedicalCenter.Address,
+                    Phone = p.Doctor.MedicalCenter.Phone,
+                }
 
             },
             Patient = new PatientDto

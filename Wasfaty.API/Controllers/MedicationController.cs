@@ -142,4 +142,33 @@ public class MedicationController : ControllerBase
         }
     
     }
+
+
+    [HttpGet("GetMultipleByIds")]
+    public async Task<IActionResult> GetMultipleByIds( string ids)
+    {
+        try
+        {
+            if (string.IsNullOrWhiteSpace(ids))
+                return BadRequest("يجب تقديم قائمة IDs");
+
+            var idList = ids.Split(',').Select(int.Parse).ToList();
+
+            var result = await _medicationService.GetMedicationsByIdsAsync(idList);
+
+
+            if (result == null)
+            {
+                BadRequest("حصل طاء اثناء جلب الادوية");
+            }
+
+
+            return Ok(result);
+               
+        }
+        catch (FormatException)
+        {
+            return BadRequest("تنسيق IDs غير صحيح");
+        }
+    }
 }

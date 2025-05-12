@@ -53,4 +53,12 @@ public class MedicationRepository : IMedicationRepository
         }
         return false;
     }
+
+    public async Task<List<Medication>> GetMedicationsByIdsAsync(List<int> ids)
+    {
+        return await _context.Medications
+            .Include(m => m.PrescriptionItems)
+            .Where(m => ids.Contains(m.Id))
+            .ToListAsync();
+    }
 }
