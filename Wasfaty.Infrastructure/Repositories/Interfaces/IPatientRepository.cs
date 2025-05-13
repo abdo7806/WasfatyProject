@@ -10,4 +10,7 @@ public interface IPatientRepository
 
     Task<List<Patient>> SearchPatients(string term);
 
+    Task<Patient> GetPatientByUserIdAsync(int userId);
+
+
 }

@@ -185,6 +185,29 @@ public class PatientController : ControllerBase
     }
 
 
+   // [Authorize(Roles = Roles.Admin + "," + Roles.Doctor)] // استثناء
+    // GET: api/patient/{id}
+    [HttpGet("GetPatientByUserId/{userId}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<PatientDto>> GetPatientByUserId(int userId)
+    {
+        if (userId < 1)
+        {
+            return BadRequest($"Not accepted userId {userId}");
+        }
+
+        var patient = await _patientService.GetPatientByUserIdAsync(userId);
+        if (patient == null)
+        {
+            return NotFound($"Patient with ID {userId} not found.");
+        }
+        return Ok(patient);
+    }
+
+
+
 
 }
 

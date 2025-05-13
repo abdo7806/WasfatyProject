@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
+using Wasfaty.Application.DTOs.Doctors;
 using Wasfaty.Application.DTOs.Patients;
 
 namespace Wasfaty.Application.Interfaces
@@ -32,5 +33,10 @@ namespace Wasfaty.Application.Interfaces
         Task<bool> DeleteAsync(int id);
 
         Task<List<PatientDto>> SearchPatients(string term);
+
+        /// <summary>
+        /// UserId جلب المريض بواسطة المعرف المستخدم
+        /// </summary>
+        Task<PatientDto> GetPatientByUserIdAsync(int userId);
     }
 }

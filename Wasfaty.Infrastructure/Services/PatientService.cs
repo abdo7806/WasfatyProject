@@ -137,4 +137,33 @@ public class PatientService : IPatientService
 
         }).ToList(); // يتضمن الوصفات
     }
+
+    public async Task<PatientDto> GetPatientByUserIdAsync(int userId)
+    {
+        var patient = await _patientRepository.GetPatientByUserIdAsync(userId);
+
+        if (patient == null)
+        {
+            return null;
+        }
+
+        
+
+        return new PatientDto
+        {
+            Id = patient.Id,
+            UserId = patient.UserId,
+            Gender = patient.Gender,
+            BloodType = patient.BloodType,
+            DateOfBirth = patient.DateOfBirth,
+            User = new UserDto
+            {
+                Id = patient.User.Id,
+                FullName = patient.User.FullName,
+                Email = patient.User.Email,
+                Role = (UserRoleEnum)patient.User.RoleId,
+                CreatedAt = patient.User.CreatedAt,
+            },
+        };
+    }
 }
