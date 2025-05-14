@@ -21,6 +21,8 @@ public class PrescriptionRepository : IPrescriptionRepository
             .Include(p => p.PrescriptionItems)
             .Include(p => p.Doctor.User)
             .Include(p => p.Patient.User)
+                        .Include(p => p.Doctor.MedicalCenter)
+
             .FirstOrDefaultAsync(p => p.Id == id);
     }
 
@@ -29,6 +31,8 @@ public class PrescriptionRepository : IPrescriptionRepository
         return await _context.Prescriptions
             .Include(p => p.PrescriptionItems)
             .Include(p => p.Doctor.User)
+                        .Include(p => p.Doctor.MedicalCenter)
+
             .Include(p => p.Patient.User)
             .ToListAsync();
     }
@@ -68,6 +72,7 @@ public class PrescriptionRepository : IPrescriptionRepository
             .Include(p => p.PrescriptionItems)
             .Include(p => p.Doctor.User)
             .Include(p => p.Patient.User)
+            .Include(p => p.Doctor.MedicalCenter)
             .Where(p => p.DoctorId == doctorId)
             .ToListAsync(); ;
     }

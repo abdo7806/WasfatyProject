@@ -50,6 +50,14 @@ public class PrescriptionService : IPrescriptionService
                     CreatedAt = prescription.Doctor.User.CreatedAt,
                 },
 
+                MedicalCenter = new MedicalCenterDto
+                {
+                    Id = prescription.Doctor.MedicalCenter.Id,
+                    Name = prescription.Doctor.MedicalCenter.Name,
+                    Address = prescription.Doctor.MedicalCenter.Address,
+                    Phone = prescription.Doctor.MedicalCenter.Phone,
+                }
+
             },
             Patient = new PatientDto
             {
@@ -77,6 +85,8 @@ public class PrescriptionService : IPrescriptionService
                 Duration = pi.Duration,
             }).ToList(),
         };
+  
+    
     }
 
     public async Task<IEnumerable<PrescriptionDto>> GetAllAsync()
@@ -104,6 +114,13 @@ public class PrescriptionService : IPrescriptionService
                     Role = (UserRoleEnum)p.Doctor.User.RoleId,
                     CreatedAt = p.Doctor.User.CreatedAt,
                 },
+                MedicalCenter = new MedicalCenterDto
+                {
+                    Id = p.Doctor.MedicalCenter.Id,
+                    Name = p.Doctor.MedicalCenter.Name,
+                    Address = p.Doctor.MedicalCenter.Address,
+                    Phone = p.Doctor.MedicalCenter.Phone,
+                }
 
             },
             Patient = new PatientDto

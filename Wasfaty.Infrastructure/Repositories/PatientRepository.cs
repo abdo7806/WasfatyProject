@@ -4,7 +4,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using Wasfaty.Application.DTOs.Doctors;
 using Wasfaty.Application.DTOs.Patients;
+using Wasfaty.Application.DTOs.Prescriptions;
 using Wasfaty.Application.DTOs.Users;
 
 
@@ -115,6 +117,100 @@ namespace Wasfaty.Infrastructure.Repositories
     .Include(p => p.User)
     .Include(p => p.Prescriptions)
     .FirstOrDefaultAsync(p => p.Id == id);
+        }
+
+        public async Task<PatientDashboardDto> GetDashboardDataAsync(int patientId)
+        {
+            // جلب عدد الوصفات الكلي
+            var totalPrescriptions = await _context.Prescriptions
+                .CountAsync(p => p.PatientId == patientId);
+
+            // جلب عدد الأدوية المصروفة
+            var dispensedMeds = await _context.Prescriptions
+                .Where(p => p.PatientId == patientId && p.IsDispensed)
+                .SelectMany(p => p.PrescriptionItems)
+                .CountAsync();
+
+            // جلب أحدث وصفة
+            var latestPrescription = await _context.Prescriptions
+                .Where(p => p.PatientId == patientId)
+                .Include(p => p.Patient)
+                .Include(p => p.Patient.User)
+                .Include(p => p.Doctor)
+                .ThenInclude(d => d.User)
+                .Include(p => p.Doctor.MedicalCenter)
+                .Include(p => p.PrescriptionItems)
+                .OrderByDescending(p => p.IssuedDate)
+                .FirstOrDefaultAsync();
+
+
+
+            // تحويل البيانات إلى DTO
+            var result = new PatientDashboardDto
+            {
+                TotalPrescriptions = totalPrescriptions,
+                DispensedMeds = dispensedMeds,
+                LatestPrescription = latestPrescription != null ? MapToPrescriptionDto(latestPrescription) : null
+            };
+
+
+         return result;
+        }
+
+
+        private PrescriptionDto MapToPrescriptionDto(Prescription prescription)
+        {
+            return new PrescriptionDto
+            {
+                Id = prescription.Id,
+                DoctorId = prescription.DoctorId,
+                PatientId = prescription.PatientId,
+                IssuedDate = prescription.IssuedDate,
+                IsDispensed = prescription.IsDispensed,
+                Doctor = new DoctorDto
+                {
+                    Id = prescription.Doctor.Id,
+                    UserId = prescription.Doctor.UserId,
+                    MedicalCenterId = prescription.Doctor.MedicalCenterId,
+                    Specialization = prescription.Doctor.Specialization,
+                    LicenseNumber = prescription.Doctor.LicenseNumber,
+                    User = new UserDto
+                    {
+                        Id = prescription.Doctor.User.Id,
+                        FullName = prescription.Doctor.User.FullName,
+                        Email = prescription.Doctor.User.Email,
+                        Role = (UserRoleEnum)prescription.Doctor.User.RoleId,
+                        CreatedAt = prescription.Doctor.User.CreatedAt,
+                    },
+
+                },
+                Patient = new PatientDto
+                {
+                    Id = prescription.Patient.Id,
+                    UserId = prescription.Patient.UserId,
+                    Gender = prescription.Patient.Gender,
+                    BloodType = prescription.Patient.BloodType,
+                    DateOfBirth = prescription.Patient.DateOfBirth,
+                    User = new UserDto
+                    {
+                        Id = prescription.Patient.User.Id,
+                        FullName = prescription.Patient.User.FullName,
+                        Email = prescription.Patient.User.Email,
+                        Role = (UserRoleEnum)prescription.Patient.User.RoleId,
+                        CreatedAt = prescription.Patient.User.CreatedAt,
+                    },
+                },
+                PrescriptionItems = prescription.PrescriptionItems.Select(pi => new PrescriptionItemDto
+                {
+                    Id = pi.Id,
+                    PrescriptionId = pi.PrescriptionId,
+                    MedicationId = pi.MedicationId,
+                    Dosage = pi.Dosage,
+                    Frequency = pi.Frequency,
+                    Duration = pi.Duration,
+                }).ToList(),
+            };
+
         }
 
         public async Task<Patient> GetPatientByUserIdAsync(int userId)

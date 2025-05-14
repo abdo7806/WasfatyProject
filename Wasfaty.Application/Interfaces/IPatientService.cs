@@ -38,5 +38,8 @@ namespace Wasfaty.Application.Interfaces
         /// UserId جلب المريض بواسطة المعرف المستخدم
         /// </summary>
         Task<PatientDto> GetPatientByUserIdAsync(int userId);
+
+
+        Task<PatientDashboardDto> GetDashboardDataAsync(int patientId);//صفحة لوحة القيادة للمريض
     }
 }

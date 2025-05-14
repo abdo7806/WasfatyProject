@@ -166,4 +166,9 @@ public class PatientService : IPatientService
             },
         };
     }
+
+    public Task<PatientDashboardDto> GetDashboardDataAsync(int patientId)
+    {
+        return _patientRepository.GetDashboardDataAsync(patientId);
+    }
 }

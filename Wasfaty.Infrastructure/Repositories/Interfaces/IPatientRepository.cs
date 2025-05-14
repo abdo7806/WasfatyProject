@@ -12,5 +12,8 @@ public interface IPatientRepository
 
     Task<Patient> GetPatientByUserIdAsync(int userId);
 
+    Task<PatientDashboardDto> GetDashboardDataAsync(int patientId);//صفحة لوحة القيادة للمريض
+
+
 
 }

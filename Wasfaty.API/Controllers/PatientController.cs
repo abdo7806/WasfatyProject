@@ -27,7 +27,7 @@ public class PatientController : ControllerBase
         _userService = userService;
     }
 
-   [Authorize(Roles = Roles.Admin + "," + Roles.Doctor)] // استثناء
+  // [Authorize(Roles = Roles.Admin + "," + Roles.Doctor)] // استثناء
 
     // GET: api/patient
     [HttpGet("All", Name = "GetAllPatients")]
@@ -207,6 +207,37 @@ public class PatientController : ControllerBase
     }
 
 
+
+
+    [HttpGet("dashboard/{patientId}")]
+    public async Task<IActionResult> GetDashboardData(int patientId)
+    {
+        try
+        {
+
+            if (patientId < 1)
+            {
+                return BadRequest($"Not accepted patientId {patientId}");
+            }
+
+            // جلب بيانات لوحة التحكم
+
+            var dashboardData = await _patientService.GetDashboardDataAsync(patientId);
+
+            if (dashboardData == null)
+            {
+                return NotFound($"dashboardData with ID {patientId} not found.");
+            }
+            return Ok(dashboardData);
+
+
+         
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, "حدث خطأ داخلي في الخادم");
+        }
+    }
 
 
 }

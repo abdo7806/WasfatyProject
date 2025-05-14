@@ -1071,6 +1071,22 @@
   },
   {
     "ContainingType": "PatientController",
+    "Method": "GetDashboardData",
+    "RelativePath": "api/PatientController/dashboard/{patientId}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "patientId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "PatientController",
     "Method": "GetPatientByUserId",
     "RelativePath": "api/PatientController/GetPatientByUserId/{userId}",
     "HttpMethod": "GET",
