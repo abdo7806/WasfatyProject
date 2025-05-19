@@ -1,6 +1,22 @@
 [
   {
     "ContainingType": "AuthController",
+    "Method": "ChangePasswordAsync",
+    "RelativePath": "api/Auth/change-password",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "model",
+        "Type": "Wasfaty.Application.DTOs.Auth.ChangePasswordDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "AuthController",
     "Method": "Login",
     "RelativePath": "api/Auth/login",
     "HttpMethod": "POST",
@@ -1801,6 +1817,16 @@
         "StatusCode": 400
       }
     ]
+  },
+  {
+    "ContainingType": "PrescriptionController",
+    "Method": "GetDashboardData",
+    "RelativePath": "api/Prescription/dashboard",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
   },
   {
     "ContainingType": "PrescriptionController",

@@ -23,7 +23,13 @@ namespace Wasfaty.Application.Interfaces
         /* Task<UserDto> RegisterUserAsync(RegisterUserDto registerUserDto);
          Task<LoginRequestDto> LoginAsync(LoginDTO loginDto);
          Task<bool> UserExistsAsync(string email);*/
-    
+
+        /// <summary>
+        /// تغير كلمة المرور 
+        /// </summary>
+        /// <param name="request">بيانات تسجيل الدخول</param>
+        /// <returns>توكن JWT إذا نجح الدخول</returns>
+        Task<bool> ChangeUserPassword(int userId, string currentPassword, string newPassword);
 
 
 

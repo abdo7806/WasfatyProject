@@ -18,4 +18,8 @@ public interface IPrescriptionRepository
     Task<List<Prescription>> GetByPatientIdAsync(int PatientId);
 
 
+    Task<PrescriptiontDashboardDto> GetDashboardDataAsync();//صفحة لوحة القيادة للادمن
+
+
+
 }

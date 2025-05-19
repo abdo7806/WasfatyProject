@@ -11,7 +11,7 @@ namespace Wasfaty.API.Controllers
     [ApiController]
     [Route("api/[controller]")]
     //[Authorize] // يتطلب تسجيل الدخول للوصول إلى جميع الدوال في هذه الوحدة
-    [Authorize(Roles = Roles.Admin)]
+  //  [Authorize(Roles = Roles.Admin)]
     public class UserController : ControllerBase
     {
         private readonly IUserService _userService;
@@ -90,7 +90,8 @@ namespace Wasfaty.API.Controllers
         }
 
         // PUT: api/user/{id}
-  
+        [Authorize(Roles = Roles.Admin + "," + Roles.Patient)] // استثناء
+
         [HttpPut("{id}", Name = "UpdateUser")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]

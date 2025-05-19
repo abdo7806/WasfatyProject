@@ -258,5 +258,34 @@ public class PrescriptionController : ControllerBase
 
 
 
+    [HttpGet("dashboard")]
+    public async Task<IActionResult> GetDashboardData()
+    {
+        try
+        {
+
+          
+
+            // جلب بيانات لوحة التحكم
+
+            var dashboardData = await _prescriptionService.GetDashboardDataAsync();
+
+            if (dashboardData == null)
+            {
+                return NotFound($"dashboardData not found.");
+            }
+            return Ok(dashboardData);
+
+
+
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, "حدث خطأ داخلي في الخادم");
+        }
+    }
+
+
+
 
 }

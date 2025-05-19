@@ -47,7 +47,7 @@ public class PatientController : ControllerBase
         return Ok(patients);
     }
 
-    [Authorize(Roles = Roles.Admin + "," + Roles.Doctor)] // استثناء
+   // [Authorize(Roles = Roles.Admin + "," + Roles.Doctor)] // استثناء
     // GET: api/patient/{id}
     [HttpGet("{id}", Name = "GetPatientById")]
     [ProducesResponseType(StatusCodes.Status200OK)]
@@ -69,7 +69,7 @@ public class PatientController : ControllerBase
     }
 
 
-    [Authorize(Roles = Roles.Admin)]
+ //   [Authorize(Roles = Roles.Admin)]
 
     // POST: api/patient
     //   [Authorize(Roles = "Admin")] // فقط المسؤولين يمكنهم إنشاء مرضى
@@ -112,8 +112,7 @@ public class PatientController : ControllerBase
         return CreatedAtRoute("GetPatientById", new { id = patient.Id }, patient);
     }
 
-    [Authorize(Roles = Roles.Admin)]
-
+    [Authorize(Roles = Roles.Admin + "," + Roles.Patient)] // استثناء
     // PUT: api/patient/{id}
     [HttpPut("{id}", Name = "UpdatePatient")]
     [ProducesResponseType(StatusCodes.Status200OK)]

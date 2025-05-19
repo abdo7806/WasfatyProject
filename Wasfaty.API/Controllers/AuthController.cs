@@ -52,4 +52,22 @@ public class AuthController : ControllerBase
         }
         return Ok(token);
     }
+
+
+
+    [HttpPost("change-password")]
+    public async Task<IActionResult> ChangePasswordAsync([FromBody] ChangePasswordDto model)
+    {
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
+        var result = await _authService.ChangeUserPassword(model.UserId, model.CurrentPassword, model.NewPassword);
+
+        if (!result)
+            return BadRequest("Failed to change password.");
+
+        return Ok("Password changed successfully.");
+    }
+
+
 }

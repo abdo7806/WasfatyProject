@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Wasfaty.Infrastructure")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+68f1db73bf0fb8d5161b984847c72b6755bf430f")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+afbbe84ad0d94d2174eaaa10087130e368eaa32c")]
 [assembly: System.Reflection.AssemblyProductAttribute("Wasfaty.Infrastructure")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Wasfaty.Infrastructure")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

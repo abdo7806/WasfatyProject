@@ -1,6 +1,7 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using Azure.Core;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using Wasfaty.Application.DTOs.Auth;
@@ -11,11 +12,34 @@ public class AuthService : IAuthService
 {
     private readonly IAuthRepository _authRepository;
     private readonly IConfiguration _configuration;
+    private readonly IUserRepository _userRepository;
 
-    public AuthService(IAuthRepository authRepository, IConfiguration configuration)
+    public AuthService(IAuthRepository authRepository, IConfiguration configuration, IUserRepository userRepository)
     {
         _authRepository = authRepository;
         _configuration = configuration;
+        _userRepository = userRepository;
+    }
+
+    public async Task<bool> ChangeUserPassword(int userId, string currentPassword, string newPassword)
+    {
+        // استرجع المستخدم من قاعدة البيانات باستخدام userId
+        var user = await _userRepository.GetByIdAsync(userId);
+
+        if (user == null || !VerifyPassword(user, currentPassword))
+        {
+            return false; // المستخدم غير موجود أو كلمة المرور الحالية غير صحيحة
+        }
+        // تحديث كلمة المرور
+        user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(newPassword); // تأكد من أنك تستخدم خوارزمية تشفير مناسبة
+
+        return await _authRepository.ChangeUserPassword(user);
+    }
+
+    private bool VerifyPassword(User user, string password)
+    {
+        // تحقق من كلمة المرور باستخدام خوارزمية التشفير المناسبة
+        return BCrypt.Net.BCrypt.Verify(password, user.PasswordHash);
     }
 
     public async Task<LoginResponseDto> LoginAsync(LoginRequestDto request)

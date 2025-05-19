@@ -22,4 +22,27 @@ public class AuthRepository  : IAuthRepository
         await _context.SaveChangesAsync();
         return user;
     }
+
+    public async Task<bool> ChangeUserPassword(User user)
+    {
+
+        try
+        {
+            _context.Users.Update(user);
+
+            await _context.SaveChangesAsync();
+            return true;
+
+
+        }
+        catch (Exception ex)
+        {
+            return false;
+        }
+
+
+
+    }
+
+
 }

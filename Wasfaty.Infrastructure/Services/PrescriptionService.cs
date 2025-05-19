@@ -321,4 +321,9 @@ public class PrescriptionService : IPrescriptionService
             }).ToList(),
         }).ToList();
     }
+
+    public async Task<PrescriptiontDashboardDto> GetDashboardDataAsync()
+    {
+        return await _prescriptionRepository.GetDashboardDataAsync();
+    }
 }

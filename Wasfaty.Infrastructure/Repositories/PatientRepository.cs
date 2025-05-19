@@ -53,15 +53,6 @@ namespace Wasfaty.Infrastructure.Repositories
         public async Task<IEnumerable<PatientDto>> GetAllAsync()
         {
 
-            /*   await _context.Users
-                   .Select(user => new UserDto
-                   {
-                       Id = user.Id,
-                       FullName = user.FullName,
-                       Email = user.Email,
-                       Role = (UserRoleEnum)user.RoleId,
-                       CreatedAt = user.CreatedAt
-                   }).ToListAsync();*/
 
             var Patients = await _context.Patients.Include(p => p.User).ToListAsync();
 
@@ -86,32 +77,6 @@ namespace Wasfaty.Infrastructure.Repositories
         }
         public async Task<Patient> GetByIdAsync(int id)
         {
-            /* var patient = await _context.Patients.Include(p => p.User).Include(p => p.Prescriptions).FirstOrDefaultAsync(p => p.Id == id);
-             if (patient != null)
-             {
-                 return new Patient
-                 {
-                     Id = patient.Id,
-                     UserId = patient.UserId,
-                     DateOfBirth = patient.DateOfBirth,
-                     Gender = patient.Gender,
-                     BloodType = patient.BloodType,
-                     User = new User
-                     {
-                         Id = patient.User.Id,
-                         FullName = patient.User.FullName,
-                         Email = patient.User.Email,
-                         RoleId = patient.User.RoleId,
-                         CreatedAt = patient.User.CreatedAt,
-                     },
-
-                 };
-             }
-
-             else
-             {
-                 return null;
-             }*/
 
             return await _context.Patients
     .Include(p => p.User)

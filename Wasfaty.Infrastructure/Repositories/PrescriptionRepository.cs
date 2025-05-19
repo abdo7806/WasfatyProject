@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reflection.Metadata.Ecma335;
 using System.Text;
 using System.Threading.Tasks;
+using Wasfaty.Application.DTOs.Prescriptions;
 
 public class PrescriptionRepository : IPrescriptionRepository
 {
@@ -87,5 +88,25 @@ public class PrescriptionRepository : IPrescriptionRepository
             
             .Where(p => p.PatientId == PatientId)
             .ToListAsync();
+    }
+
+    public async Task<PrescriptiontDashboardDto> GetDashboardDataAsync()
+    {
+        var DoctorCount = _context.Doctors.Count();
+
+        var PharmacistCount = _context.Pharmacists.Count();
+
+        var PatientCount = _context.Patients.Count();
+
+        var PrescriptiontCount = _context.Prescriptions.Count();
+
+        return new PrescriptiontDashboardDto
+        {
+            DoctorCount = DoctorCount,
+            PatientCount = PatientCount,
+            PharmacistCount = PharmacistCount,
+            PrescriptiontCount = PrescriptiontCount
+        };
+
     }
 }

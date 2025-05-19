@@ -17,5 +17,9 @@ namespace Wasfaty.Application.Interfaces
         Task<List<PrescriptionDto>> GetByPatientIdAsync(int PatientId);
 
 
+        Task<PrescriptiontDashboardDto> GetDashboardDataAsync();//صفحة لوحة القيادة للادمن
+
+
+
     }
 }

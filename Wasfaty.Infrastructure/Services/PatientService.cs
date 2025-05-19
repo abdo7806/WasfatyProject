@@ -1,8 +1,10 @@
 ﻿
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using Wasfaty.Application.DTOs.Patients;
+using Wasfaty.Application.DTOs.Prescriptions;
 using Wasfaty.Application.DTOs.Users;
 using Wasfaty.Application.Interfaces;
 using Wasfaty.Infrastructure.Repositories;
@@ -48,6 +50,16 @@ public class PatientService : IPatientService
                 Role = (UserRoleEnum)patient.User.RoleId,
                 CreatedAt = patient.User.CreatedAt,
             },
+
+            Prescriptions = patient.Prescriptions.Select(p => new PrescriptionDto
+            {
+                Id = p.Id,
+                DoctorId = p.DoctorId,
+                PatientId = p.PatientId,
+                IssuedDate = p.IssuedDate,
+                IsDispensed = p.IsDispensed,
+            })
+
         }; 
     }
 
