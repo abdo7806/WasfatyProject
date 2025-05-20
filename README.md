@@ -80,9 +80,26 @@ Wasfaty.API/
 
 ---
 
-## 📸 Swagger Screenshots | لقطات من واجهة Swagger
+## 🔗 Front-End Repository | مستودع الواجهة الأمامية
 
-*(قم بإضافة صور هنا مع روابط مباشرة من مستودع الصور الخاص بك)*
+تم بناء الواجهة الأمامية بشكل منفصل:
+
+➡️ [Wasfaty Front-End GitHub Repo](https://github.com/abdo7806/WasfatyProject_front-end)
+
+---
+## 📸 Swagger API Screenshots | لقطات شاشة لـ Swagger
+
+![Auth Endpoints](https://github.com/abdo7806/WasfatyProject/blob/master/Screenshot/AuthEndpoints.png?raw=true)  
+![Doctor Endpoints](https://github.com/abdo7806/WasfatyProject/blob/master/Screenshot/DoctorEndpoints.png?raw=true)  
+![Patient Endpoints](https://github.com/abdo7806/WasfatyProject/blob/master/Screenshot/PatientEndpoints.png?raw=true)  
+![MedicalCenter Endpoints](https://github.com/abdo7806/WasfatyProject/blob/master/Screenshot/MedicalCenterEndpoints.png?raw=true)  
+![Pharmacist Endpoints](https://github.com/abdo7806/WasfatyProject/blob/master/Screenshot/PharmacistEndpoints.png?raw=true)  
+![Pharmacy Endpoints](https://github.com/abdo7806/WasfatyProject/blob/master/Screenshot/PharmacyEndpoints.png?raw=true)  
+![Prescription Endpoints](https://github.com/abdo7806/WasfatyProject/blob/master/Screenshot/PrescriptionEndpoints.png?raw=true)  
+![PrescriptionItem Endpoints](https://github.com/abdo7806/WasfatyProject/blob/master/Screenshot/PrescriptionItemEndpoints.png?raw=true)  
+![Medication Endpoints](https://github.com/abdo7806/WasfatyProject/blob/master/Screenshot/MedicationEndpoint.png?raw=true)  
+![Dispense Records Endpoints](https://github.com/abdo7806/WasfatyProject/blob/master/Screenshot/DispenseRecordEndpoint.png?raw=true)
+![User Endpoints](https://github.com/abdo7806/WasfatyProject/blob/master/Screenshot/UserEndpoints.png?raw=true)
 
 ---
 
@@ -101,7 +118,6 @@ Wasfaty.API/
 
 * CRUD للوصفات حسب الصلاحيات
 
-*(تفصيل باقي الـ Endpoints حسب الحاجة)*
 
 ---
 
