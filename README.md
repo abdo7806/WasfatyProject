@@ -1,8 +1,8 @@
 
 ---
 
-# 🏥 Wasfaty | منصة وصفتي الطبية الإلكترونية
-
+# 🏥 Wasfaty | Electronic Medical Prescription Platform
+نظام إلكتروني شامل لإدارة الوصفات الطبية باستخدام ASP.NET Core
 An electronic prescription management system built with ASP.NET Core Web API, enabling doctors to issue prescriptions, patients to view their medical records, and pharmacists to dispense medications securely.
 النظام يدير الوصفات الطبية إلكترونيًا، مع صلاحيات متعددة: مسؤول، طبيب، صيدلي، ومريض.
 
@@ -50,13 +50,11 @@ An electronic prescription management system built with ASP.NET Core Web API, en
 ## 📁 Project Structure | هيكل المشروع
 
 ```
-Wasfaty.API/
-├── Controllers/           # API controllers  
-├── Domain/                # Domain entities  
-├── Application/           # Business logic and services  
-├── Infrastructure/        # Data access and DB context  
-├── Program.cs             # Entry point  
-└── appsettings.json       # Configuration (DB connection, JWT, etc.)
+Wasfaty.API/ # واجهة برمجة التطبيقات (API Layer)
+Wasfaty.Application/ # المنطق التجاري (Use Cases, Interfaces)
+Wasfaty.Domain/ # الكيانات (Entities) والـDomain Rules
+Wasfaty.Infrastructure/ # الوصول لقاعدة البيانات وتنفيذ الواجهات
+Wasfaty.Tests/ # اختبارات (اختياري)
 ```
 
 ---
@@ -77,14 +75,15 @@ Wasfaty.API/
 * Full CRUD operations for Admin role
 * Swagger integrated for API testing and documentation
 * Separate Front-End repository linked (under development)
-
+* Modular architecture with separated Back-End and Front-End repositories
+* بنية معيارية بفصل الواجهة الخلفية والواجهة الأمامية في مستودعين منفصلين
 ---
 
 ## 🔗 Front-End Repository | مستودع الواجهة الأمامية
 
 تم بناء الواجهة الأمامية بشكل منفصل:
 
-➡️ [Wasfaty Front-End GitHub Repo](https://github.com/abdo7806/WasfatyProject_front-end)
+➡️ [Wasfaty Front-End GitHub Repo](https://github.com/abdo7806/WasfatyProject_front-end.git)
 
 ---
 ## 📸 Swagger API Screenshots | لقطات شاشة لـ Swagger
