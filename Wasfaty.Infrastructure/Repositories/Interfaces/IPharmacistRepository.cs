@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Wasfaty.Application.DTOs.Pharmacists;
 
 public interface IPharmacistRepository
 {
@@ -12,4 +13,11 @@ public interface IPharmacistRepository
     Task<Pharmacist> AddAsync(Pharmacist pharmacist);
     Task<Pharmacist> UpdateAsync(Pharmacist pharmacist);
     Task<bool> DeleteAsync(int id);
+
+
+    Task<Pharmacist> GetPharmacyByUserIdAsync(int userId);
+
+    Task<PharmacistDashboardStatsDto> GetPharmacistDataAsync(int PharmacistId);//صفحة لوحة القيادة للصيدلي
+
+
 }

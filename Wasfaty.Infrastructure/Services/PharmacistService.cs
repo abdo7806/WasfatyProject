@@ -176,4 +176,51 @@ public class PharmacistService : IPharmacistService
                 }
             }).ToList();
     }
+
+    public async Task<PharmacistDto> GetPharmacyByUserIdAsync(int userId)
+    {
+        var pharmacist = await _pharmacistRepository.GetPharmacyByUserIdAsync(userId);
+        if (pharmacist == null) return null;
+
+        return new PharmacistDto
+        {
+            Id = pharmacist.Id,
+            UserId = pharmacist.UserId,
+            PharmacyId = pharmacist.PharmacyId,
+            LicenseNumber = pharmacist.LicenseNumber,
+            DispenseRecords = pharmacist.DispenseRecords.Select(dr => new DispenseRecordDto
+            {
+                Id = dr.Id,
+                PrescriptionId = dr.PrescriptionId,
+                PharmacistId = dr.PharmacistId,
+                PharmacyId = dr.PharmacyId,
+                DispensedDate = dr.DispensedDate
+            }).ToList(),
+            User = new UserDto
+            {
+                Id = pharmacist.User.Id,
+                FullName = pharmacist.User.FullName,
+                Email = pharmacist.User.Email,
+                Role = (UserRoleEnum)pharmacist.User.RoleId,
+                CreatedAt = pharmacist.User.CreatedAt,
+
+
+            },
+            Pharmacy = new PharmacyDto
+            {
+                Id = pharmacist.Pharmacy.Id,
+                Name = pharmacist.Pharmacy.Name,
+                Address = pharmacist.Pharmacy.Address,
+                Phone = pharmacist.Pharmacy.Phone,
+            }
+        };
+    }
+
+    public async Task<PharmacistDashboardStatsDto> GetPharmacistDataAsync(int PharmacistId)
+    {
+        var state = await _pharmacistRepository.GetPharmacistDataAsync(PharmacistId);
+        if (state == null) return null;
+
+        return state;
+    }
 }

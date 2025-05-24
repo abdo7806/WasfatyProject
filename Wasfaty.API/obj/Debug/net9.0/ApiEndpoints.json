@@ -250,6 +250,41 @@
     ]
   },
   {
+    "ContainingType": "DispenseRecordController",
+    "Method": "GetByPharmacyId",
+    "RelativePath": "api/DispenseRecord/GetAllDispenseRecor/{PharmacyId}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "PharmacyId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "System.Collections.Generic.List\u00601[[Wasfaty.Application.DTOs.DispenseRecords.DispenseRecordDto, Wasfaty.Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      },
+      {
+        "Type": "Microsoft.AspNetCore.Mvc.ProblemDetails",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 404
+      }
+    ]
+  },
+  {
     "ContainingType": "DoctorController",
     "Method": "GetDoctorById",
     "RelativePath": "api/Doctor/{id}",
@@ -1417,6 +1452,66 @@
     ]
   },
   {
+    "ContainingType": "PharmacistController",
+    "Method": "GetPharmacistByUserId",
+    "RelativePath": "api/Pharmacist/GetPharmacistByUserId/{userId}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "userId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "Wasfaty.Application.DTOs.Pharmacists.PharmacistDto",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      },
+      {
+        "Type": "Microsoft.AspNetCore.Mvc.ProblemDetails",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 404
+      },
+      {
+        "Type": "Microsoft.AspNetCore.Mvc.ProblemDetails",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 400
+      }
+    ]
+  },
+  {
+    "ContainingType": "PharmacistController",
+    "Method": "GetDashboardStats",
+    "RelativePath": "api/Pharmacist/stats/{pharmacistId}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "pharmacistId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
     "ContainingType": "PharmacyController",
     "Method": "GetPharmacyById",
     "RelativePath": "api/Pharmacy/{id}",
@@ -1941,6 +2036,52 @@
         "StatusCode": 400
       }
     ]
+  },
+  {
+    "ContainingType": "PrescriptionController",
+    "Method": "GetNewPrescriptions",
+    "RelativePath": "api/Prescription/New/{lastPrescriptionId}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "lastPrescriptionId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "PrescriptionController",
+    "Method": "GetAllPrescriptionPending",
+    "RelativePath": "api/Prescription/Pending",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": [
+      {
+        "Type": "System.Collections.Generic.List\u00601[[Wasfaty.Application.DTOs.Prescriptions.PrescriptionDto, Wasfaty.Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      },
+      {
+        "Type": "Microsoft.AspNetCore.Mvc.ProblemDetails",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 404
+      }
+    ],
+    "EndpointName": "GetAllPrescriptionPending"
   },
   {
     "ContainingType": "PrescriptionItemController",

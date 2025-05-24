@@ -7,7 +7,7 @@ using Wasfaty.Application.Interfaces;
 
 [Route("api/[controller]")]
 [ApiController]
-[Authorize(Roles = Roles.Admin)]
+//[Authorize(Roles = Roles.Admin)]
 
 public class DispenseRecordController : ControllerBase
 {
@@ -220,7 +220,23 @@ public class DispenseRecordController : ControllerBase
 
 
 
-    
+    [HttpGet("GetAllDispenseRecor/{PharmacyId}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<List<DispenseRecordDto>>> GetByPharmacyId(int PharmacyId)
+    {
+        var dispenseRecords = await _dispenseRecordService.GetByPharmacyIdAsync(PharmacyId);
+
+        if (dispenseRecords == null || !dispenseRecords.Any() || dispenseRecords.Count() == 0)
+        {
+            return NotFound("No dispenseRecords found.");
+        }
+
+        return Ok(dispenseRecords);
+    }
+
+
+
 
 
 }

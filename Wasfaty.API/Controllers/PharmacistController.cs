@@ -190,4 +190,45 @@ public class PharmacistController : ControllerBase
         }
         return Ok(pharmacists);
     }
+
+
+
+    [HttpGet("GetPharmacistByUserId/{userId}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<PharmacistDto>> GetPharmacistByUserId(int userId)
+    {
+
+
+        if (userId < 1)
+        {
+            return BadRequest("Invalid userId.");
+        }
+
+        var pharmacist = await _pharmacistService.GetPharmacyByUserIdAsync(userId);
+        if (pharmacist == null)
+        {
+            return NotFound($"pharmacist with userId {userId} not found.");
+        }
+        return Ok(pharmacist);
+    }
+
+
+
+    [HttpGet("stats/{pharmacistId}")]
+    public async Task<IActionResult> GetDashboardStats(int pharmacistId)
+    {
+        var pharmacist = await _pharmacistService.GetByIdAsync(pharmacistId);
+
+        if (pharmacist == null)
+            return Unauthorized();
+
+        var stats = await _pharmacistService.GetPharmacistDataAsync(pharmacistId);
+        return Ok(stats);
+    }
+
+
+
+
 }

@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System.Numerics;
 using Wasfaty.Application.Constants;
 using Wasfaty.Application.DTOs.Doctors;
@@ -204,6 +205,7 @@ public class PrescriptionController : ControllerBase
             IsDispensed = true// جعل الوصفة مصروفة
         };
 
+
         // existingDispenseRecord.isDispensed = true;
         var updatedDispenseRecord = await _prescriptionService.UpdateAsync(id, existingprescriptionService);
         if (updatedDispenseRecord == null)
@@ -283,6 +285,42 @@ public class PrescriptionController : ControllerBase
         {
             return StatusCode(500, "حدث خطأ داخلي في الخادم");
         }
+    }
+
+
+
+
+
+    // GET: api/prescriptions
+    [HttpGet("Pending", Name = "GetAllPrescriptionPending")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<List<PrescriptionDto>>> GetAllPrescriptionPending()
+    {
+        var prescriptions = await _prescriptionService.GetAllPrescriptionPendingAsync();
+
+        if (prescriptions == null || !prescriptions.Any() || prescriptions.Count() == 0)
+        {
+            return NotFound("No doctors found.");
+        }
+        return Ok(prescriptions);
+    }
+
+
+
+
+    // الحصول على وصفات جديدة منذ آخر معرف
+    [HttpGet("New/{lastPrescriptionId}")]
+    public async Task<IActionResult> GetNewPrescriptions(int lastPrescriptionId)
+    {
+
+        var newPrescriptions = await _prescriptionService.GetNewPrescriptionsAsync(lastPrescriptionId);
+
+        if (newPrescriptions == null || !newPrescriptions.Any() || newPrescriptions.Count() == 0)
+        {
+            return NotFound("No doctors found.");
+        }
+        return Ok(newPrescriptions);
     }
 
 

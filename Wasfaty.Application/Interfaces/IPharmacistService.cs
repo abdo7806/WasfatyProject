@@ -1,4 +1,5 @@
-﻿using Wasfaty.Application.DTOs.Pharmacists;
+﻿using Wasfaty.Application.DTOs.Patients;
+using Wasfaty.Application.DTOs.Pharmacists;
 
 namespace Wasfaty.Application.Interfaces
 {
@@ -34,6 +35,16 @@ namespace Wasfaty.Application.Interfaces
         /// الحصول على كل الصيادلة المرتبطة ربقم صيدلية معينة
         /// </summary>
         Task<List<PharmacistDto>> GetByPharmacyIdAsync(int PharmacyId);
+
+        /// <summary>
+        /// الحصول على كل الصيادلة المرتبطة ربقم المستخدم
+        /// </summary>
+        Task<PharmacistDto> GetPharmacyByUserIdAsync(int userId);
+
+
+         Task<PharmacistDashboardStatsDto> GetPharmacistDataAsync(int PharmacistId);//صفحة لوحة القيادة للصيدلي
+
+
 
     }
 }

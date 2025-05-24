@@ -109,4 +109,28 @@ public class PrescriptionRepository : IPrescriptionRepository
         };
 
     }
+
+    public async Task<List<Prescription>> GetAllPrescriptionPendingAsync()
+    {
+        return await _context.Prescriptions
+            .Include(p => p.PrescriptionItems)
+            .Include(p => p.Doctor.User)
+                        .Include(p => p.Doctor.MedicalCenter)
+
+            .Include(p => p.Patient.User)
+            .Where(p => !p.IsDispensed)
+            .ToListAsync();
+    }
+
+    public async Task<List<Prescription>> GetNewPrescriptionsAsync(int lastPrescriptionId)
+    {
+        return await _context.Prescriptions
+               .Include(p => p.PrescriptionItems)
+            .Include(p => p.Doctor.User)
+             .Include(p => p.Doctor.MedicalCenter)
+            .Include(p => p.Patient.User)
+            .Where(p => p.Id > lastPrescriptionId && !p.IsDispensed)
+            .OrderBy(p => p.Id)
+            .ToListAsync();
+    }
 }

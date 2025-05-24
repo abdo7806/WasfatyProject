@@ -15,10 +15,12 @@ using Wasfaty.Application.Interfaces;
 public class DispenseRecordService : IDispenseRecordService
 {
     private readonly IDispenseRecordRepository _dispenseRecordRepository;
+    private readonly IPrescriptionRepository _prescriptionRepository;
 
-    public DispenseRecordService(IDispenseRecordRepository dispenseRecordRepository)
+    public DispenseRecordService(IDispenseRecordRepository dispenseRecordRepository, IPrescriptionRepository prescriptionRepository)
     {
         _dispenseRecordRepository = dispenseRecordRepository;
+        _prescriptionRepository = prescriptionRepository;
     }
 
     public async Task<DispenseRecordDto?> GetByIdAsync(int id)
@@ -224,10 +226,17 @@ public class DispenseRecordService : IDispenseRecordService
                }).ToList(),
            }
         }).ToList();
+  
     }
 
     public async Task<DispenseRecordDto> CreateAsync(CreateDispenseRecordDto dispenseRecordDto)
     {
+
+        var existingPrescription = await _prescriptionRepository.GetByIdAsync(dispenseRecordDto.PrescriptionId);
+        if (existingPrescription == null) return null;
+
+
+
         var dispenseRecord = new DispenseRecord
         {
             PrescriptionId = dispenseRecordDto.PrescriptionId,
@@ -236,7 +245,11 @@ public class DispenseRecordService : IDispenseRecordService
             DispensedDate = dispenseRecordDto.DispensedDate,
         };
 
-        var addedDispenseRecord = await _dispenseRecordRepository.AddAsync(dispenseRecord);
+        var addedDispenseRecord = await _dispenseRecordRepository.AddAsync(dispenseRecord, existingPrescription);
+        if(addedDispenseRecord == null)
+        {
+            return null;
+        }
         return new DispenseRecordDto
         {
             Id = addedDispenseRecord.Id,
@@ -246,6 +259,7 @@ public class DispenseRecordService : IDispenseRecordService
             DispensedDate = addedDispenseRecord.DispensedDate,
         };
     }
+
 
     public async Task<DispenseRecordDto> UpdateAsync(int id, CreateDispenseRecordDto dispenseRecordDto)
     {
@@ -273,5 +287,106 @@ public class DispenseRecordService : IDispenseRecordService
         return await _dispenseRecordRepository.DeleteAsync(id);
     }
 
-  
+    public async Task<List<DispenseRecordDto>> GetByPharmacyIdAsync(int PharmacyId)
+    {
+        var dispenseRecords = await _dispenseRecordRepository.GetByPharmacyIdAsync(PharmacyId);
+        return dispenseRecords.Select(dr => new DispenseRecordDto
+        {
+            Id = dr.Id,
+            PrescriptionId = dr.PrescriptionId,
+            PharmacistId = dr.PharmacistId,
+            PharmacyId = dr.PharmacyId,
+            DispensedDate = dr.DispensedDate,
+            //  PharmacistName = dr.Pharmacist.User.FullName,
+            //  PharmacyName = dr.Pharmacy.Name,
+
+            Pharmacist = new PharmacistDto
+            {
+                Id = dr.Pharmacist.Id,
+                UserId = dr.Pharmacist.UserId,
+                PharmacyId = dr.Pharmacist.PharmacyId,
+                LicenseNumber = dr.Pharmacist.LicenseNumber,
+                DispenseRecords = dr.Pharmacist.DispenseRecords.Select(dr2 => new DispenseRecordDto
+                {
+                    Id = dr2.Id,
+                    PrescriptionId = dr2.PrescriptionId,
+                    PharmacistId = dr2.PharmacistId,
+                    PharmacyId = dr2.PharmacyId,
+                    DispensedDate = dr2.DispensedDate
+                }).ToList(),
+
+                User = new UserDto
+                {
+                    Id = dr.Pharmacist.User.Id,
+                    FullName = dr.Pharmacist.User.FullName,
+                    Email = dr.Pharmacist.User.Email,
+                    Role = (UserRoleEnum)dr.Pharmacist.User.RoleId,
+                    CreatedAt = dr.Pharmacist.User.CreatedAt,
+
+
+                },
+            },
+            Pharmacy = new PharmacyDto
+            {
+                Id = dr.Pharmacy.Id,
+                Name = dr.Pharmacy.Name,
+                Address = dr.Pharmacy.Address,
+                Phone = dr.Pharmacy.Phone,
+            },
+            Prescription = new PrescriptionDto
+            {
+                Id = dr.Prescription.Id,
+                DoctorId = dr.Prescription.DoctorId,
+                PatientId = dr.Prescription.PatientId,
+                IssuedDate = dr.Prescription.IssuedDate,
+                IsDispensed = dr.Prescription.IsDispensed,
+                Doctor = new DoctorDto
+                {
+                    Id = dr.Prescription.Doctor.Id,
+                    UserId = dr.Prescription.Doctor.UserId,
+                    MedicalCenterId = dr.Prescription.Doctor.MedicalCenterId,
+                    Specialization = dr.Prescription.Doctor.Specialization,
+                    LicenseNumber = dr.Prescription.Doctor.LicenseNumber,
+                    User = new UserDto
+                    {
+                        Id = dr.Prescription.Doctor.User.Id,
+                        FullName = dr.Prescription.Doctor.User.FullName,
+                        Email = dr.Prescription.Doctor.User.Email,
+                        Role = (UserRoleEnum)dr.Prescription.Doctor.User.RoleId,
+                        CreatedAt = dr.Prescription.Doctor.User.CreatedAt,
+                    },
+
+                },
+                Patient = new PatientDto
+                {
+                    Id = dr.Prescription.Patient.Id,
+                    UserId = dr.Prescription.Patient.UserId,
+                    Gender = dr.Prescription.Patient.Gender,
+                    BloodType = dr.Prescription.Patient.BloodType,
+                    DateOfBirth = dr.Prescription.Patient.DateOfBirth,
+                    User = new UserDto
+                    {
+                        Id = dr.Prescription.Patient.User.Id,
+                        FullName = dr.Prescription.Patient.User.FullName,
+                        Email = dr.Prescription.Patient.User.Email,
+                        Role = (UserRoleEnum)dr.Prescription.Patient.User.RoleId,
+                        CreatedAt = dr.Prescription.Patient.User.CreatedAt,
+                    },
+                },
+                PrescriptionItems = dr.Prescription.PrescriptionItems.Select(pi => new PrescriptionItemDto
+                {
+                    Id = pi.Id,
+                    PrescriptionId = pi.PrescriptionId,
+                    MedicationId = pi.MedicationId,
+                    Dosage = pi.Dosage,
+                    Frequency = pi.Frequency,
+                    Duration = pi.Duration,
+                    //     MedicationName = pi.Medication.Name
+
+                }).ToList(),
+
+
+            }
+        }).ToList();
+    }
 }

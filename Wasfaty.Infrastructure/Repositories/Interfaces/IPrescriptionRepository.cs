@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Wasfaty.Application.DTOs.DispenseRecords;
 using Wasfaty.Application.DTOs.Prescriptions;
 
 public interface IPrescriptionRepository
@@ -20,6 +21,10 @@ public interface IPrescriptionRepository
 
     Task<PrescriptiontDashboardDto> GetDashboardDataAsync();//صفحة لوحة القيادة للادمن
 
+    Task<List<Prescription>> GetAllPrescriptionPendingAsync();// ارجاع الوصفات الطبيه الذي قيد الانتظار
 
+
+    // ارجاع اخر الوصفات الطبيه غير المصروفه
+    Task<List<Prescription>> GetNewPrescriptionsAsync(int lastPrescriptionId);
 
 }

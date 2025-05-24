@@ -35,11 +35,37 @@ public class DispenseRecordRepository : IDispenseRecordRepository
             .ToListAsync();
     }
 
-    public async Task<DispenseRecord> AddAsync(DispenseRecord dispenseRecord)
+    public async Task<DispenseRecord> AddAsync(DispenseRecord dispenseRecord, Prescription prescription)
     {
-        _context.DispenseRecords.Add(dispenseRecord);
-        await _context.SaveChangesAsync();
-        return dispenseRecord;
+
+
+        using (var transaction = await _context.Database.BeginTransactionAsync())
+        {
+            try
+            {
+                // إضافة سجل الصرف
+                await _context.DispenseRecords.AddAsync(dispenseRecord);
+
+                // تحديث حالة الوصفة
+                prescription.IsDispensed = true; // تأكد من تحديث الحالة مباشرة
+                _context.Entry(prescription).State = EntityState.Modified;
+
+                // حفظ التغييرات
+                await _context.SaveChangesAsync();
+
+                // تأكيد المعاملة
+                await transaction.CommitAsync();
+
+                return dispenseRecord;
+            }
+            catch (Exception ex)
+            {
+                // إلغاء المعاملة في حالة حدوث خطأ
+                await transaction.RollbackAsync();
+                Console.WriteLine(ex.Message);
+                return null;
+            }
+        }
     }
 
     public async Task<DispenseRecord> UpdateAsync(DispenseRecord dispenseRecord)
@@ -60,5 +86,17 @@ public class DispenseRecordRepository : IDispenseRecordRepository
         }
 
         return false;
+    }
+
+    public async Task<List<DispenseRecord>> GetByPharmacyIdAsync(int PharmacyId)
+    {
+        return await _context.DispenseRecords
+            .Include(dr => dr.Pharmacist.User)
+            .Include(dr => dr.Pharmacy)
+            .Include(dr => dr.Prescription.Doctor.User)
+            .Include(dr => dr.Prescription.Patient.User)
+            .Include(dr => dr.Prescription.PrescriptionItems)
+            .Where(p => p.PharmacyId == PharmacyId)
+            .ToListAsync();
     }
 }

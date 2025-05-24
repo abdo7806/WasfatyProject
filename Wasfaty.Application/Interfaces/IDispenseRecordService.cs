@@ -1,5 +1,6 @@
 ﻿using Wasfaty.Application.DTOs.DispenseRecords;
 using Wasfaty.Application.DTOs.MedicalCenters;
+using Wasfaty.Application.DTOs.Prescriptions;
 
 namespace Wasfaty.Application.Interfaces
 {
@@ -38,6 +39,11 @@ namespace Wasfaty.Application.Interfaces
         Task<DispenseRecordDto?> GetByIdAsync(int prescriptionId);
 
         Task<List<DispenseRecordDto>> GetAllAsync();
+      
+        // ارجاع جميع الصرف حسب رقم الصيدليه 
+        Task<List<DispenseRecordDto>> GetByPharmacyIdAsync(int PharmacyId);
+
+
 
 
     }
