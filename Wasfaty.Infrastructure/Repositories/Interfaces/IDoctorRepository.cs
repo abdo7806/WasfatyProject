@@ -11,6 +11,10 @@ namespace Wasfaty.Application.Interfaces.Repositories
         Task<Doctor> AddAsync(Doctor doctor);
         Task<Doctor> UpdateAsync(Doctor doctor);
         Task<bool> DeleteAsync(int id);
-       // Task SaveChangesAsync();
+
+        Task<DoctorDashboardDto> GetDashboardAsync(int doctorId);// لوحت التحكم التابعة للطبيب
+
+
+        // Task SaveChangesAsync();
     }
 }

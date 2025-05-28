@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
+using Wasfaty.Application.DTOs.AdminDto;
 using Wasfaty.Application.DTOs.Doctors;
 
 namespace Wasfaty.Application.Interfaces
@@ -35,5 +36,9 @@ namespace Wasfaty.Application.Interfaces
         /// UserId جلب طبيب بواسطة المعرف المستخدم
         /// </summary>
         Task<DoctorDto> GetDoctorByUserIdAsync(int userId);
+
+
+        Task<DoctorDashboardDto> GetDashboardAsync(int doctorId);// لوحت التحكم التابعة للطبيب
+
     }
 }

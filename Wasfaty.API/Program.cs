@@ -1,3 +1,4 @@
+
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -8,7 +9,9 @@ using Wasfaty.Application.Interfaces;
 using Wasfaty.Application.Interfaces.Repositories;
 using Wasfaty.Infrastructure.Data;
 using Wasfaty.Infrastructure.Repositories;
+using Wasfaty.Infrastructure.Repositories.Interfaces;
 using Wasfaty.Infrastructure.Services;
+using Wasfaty.Infrastructure.Services.EmailServices;
 
 var builder = WebApplication.CreateBuilder(args);
 // ≈÷«›… CORS ··”„«Õ »«·Ê’Ê· «·⁄«„
@@ -112,6 +115,19 @@ builder.Services.AddScoped<IDispenseRecordRepository, DispenseRecordRepository>(
 builder.Services.AddScoped<IDispenseRecordService, DispenseRecordService>();
 
 
+builder.Services.AddScoped<IAdminRepository, AdminRepository>();
+builder.Services.AddScoped<IAdminService, AdminService>();
+
+
+builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
+builder.Services.AddTransient<IEmailService, EmailService>();
+
+
+/*builder.Services.Configure<SendGridSettings>(builder.Configuration.GetSection("SendGrid"));
+builder.Services.AddTransient<ISendGridEmailService, SendGridEmailService>();
+*/
+builder.Services.Configure<SendGridSettings>(builder.Configuration.GetSection("SendGrid"));
+builder.Services.AddTransient<IEmailService, SendGridEmailService>();
 // ≈÷«›… Œœ„«  Swagger
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();

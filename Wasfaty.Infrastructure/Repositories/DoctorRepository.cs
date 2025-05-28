@@ -38,7 +38,7 @@ public class DoctorRepository : IDoctorRepository
         return await _context.Doctors
             .Include(d => d.MedicalCenter)
             .Include(d => d.User)
-            .ToListAsync(); 
+            .ToListAsync();
     }
 
     public async Task<Doctor?> GetByIdAsync(int id)
@@ -84,5 +84,33 @@ public class DoctorRepository : IDoctorRepository
             .Include(d => d.MedicalCenter)
             .Include(d => d.User)
             .FirstOrDefaultAsync(d => d.UserId == userId);
+    }
+
+    public async Task<DoctorDashboardDto> GetDashboardAsync(int doctorId)
+    {
+        try
+        {
+            var prescriptions = _context.Prescriptions.Where(p => p.DoctorId == doctorId);
+
+            var totalPrescriptions = await prescriptions.CountAsync();
+            var dispensedPrescriptions = await prescriptions.Where(p => p.IsDispensed).CountAsync();
+            var pendingPrescriptions = await prescriptions.Where(p => !p.IsDispensed).CountAsync();
+            var uniquePatients = await prescriptions.Select(p => p.PatientId).Distinct().CountAsync();
+
+            return new DoctorDashboardDto
+            {
+                TotalPrescriptions = totalPrescriptions,
+                DispensedPrescriptions = dispensedPrescriptions,
+                PendingPrescriptions = pendingPrescriptions,
+                UniquePatients = uniquePatients
+            };
+        }
+        catch (Exception ex)
+        {
+            {
+                return null;
+            }
+
+        }
     }
 }

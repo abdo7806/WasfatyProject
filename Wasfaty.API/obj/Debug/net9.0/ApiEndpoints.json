@@ -1,5 +1,34 @@
 [
   {
+    "ContainingType": "Wasfaty.API.Controllers.AdminController",
+    "Method": "GetDashboard",
+    "RelativePath": "api/Admin/dashboard",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": [
+      {
+        "Type": "Wasfaty.Application.DTOs.AdminDto.AdminDashboardDto",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      },
+      {
+        "Type": "Microsoft.AspNetCore.Mvc.ProblemDetails",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 404
+      }
+    ]
+  },
+  {
     "ContainingType": "AuthController",
     "Method": "ChangePasswordAsync",
     "RelativePath": "api/Auth/change-password",
@@ -479,6 +508,41 @@
   },
   {
     "ContainingType": "DoctorController",
+    "Method": "GetDashboard",
+    "RelativePath": "api/Doctor/dashboard/{doctorId}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "doctorId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "Wasfaty.Application.DTOs.AdminDto.AdminDashboardDto",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      },
+      {
+        "Type": "Microsoft.AspNetCore.Mvc.ProblemDetails",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 404
+      }
+    ]
+  },
+  {
+    "ContainingType": "DoctorController",
     "Method": "GetDoctorByUserId",
     "RelativePath": "api/Doctor/GetDoctorByUserId/{UserId}",
     "HttpMethod": "GET",
@@ -520,6 +584,22 @@
         "StatusCode": 400
       }
     ]
+  },
+  {
+    "ContainingType": "Wasfaty.API.Controllers.EmailController",
+    "Method": "SendEmail",
+    "RelativePath": "api/Email/send",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "request",
+        "Type": "Wasfaty.API.Controllers.EmailRequest",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
   },
   {
     "ContainingType": "MedicalCenterController",

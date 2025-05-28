@@ -9,6 +9,7 @@ using Wasfaty.Infrastructure.Services;
 using Wasfaty.Application.DTOs.Users;
 using Wasfaty.Application.DTOs.MedicalCenters;
 using Wasfaty.Application.Constants;
+using Wasfaty.Application.DTOs.AdminDto;
 
 [Route("api/[controller]")]
 [ApiController]
@@ -192,6 +193,20 @@ public class DoctorController : ControllerBase
             return NotFound($"Doctor with UserId {UserId} not found.");
         }
         return Ok(doctor);
+    }
+
+    [HttpGet("dashboard/{doctorId}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<AdminDashboardDto>> GetDashboard(int doctorId)
+    {
+
+        var dashboardData = await _doctorService.GetDashboardAsync(doctorId);
+        if (dashboardData == null)
+        {
+            return NotFound("Dashboard data not found.");
+        }
+        return Ok(dashboardData);
     }
 
 

@@ -176,4 +176,9 @@ public class DoctorService : IDoctorService
         }
         return null;
     }
+
+    public Task<DoctorDashboardDto> GetDashboardAsync(int doctorId)
+    {
+        return _doctorRepository.GetDashboardAsync(doctorId);
+    }
 }

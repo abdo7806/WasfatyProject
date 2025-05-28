@@ -355,3 +355,9 @@ D:\كورسات ابو هد هود\مشاريع github\WasfatyProject2\Wasfaty.A
 D:\كورسات ابو هد هود\مشاريع github\WasfatyProject2\Wasfaty.API\obj\Debug\net9.0\Wasfaty.API.pdb
 D:\كورسات ابو هد هود\مشاريع github\WasfatyProject2\Wasfaty.API\obj\Debug\net9.0\Wasfaty.API.genruntimeconfig.cache
 D:\كورسات ابو هد هود\مشاريع github\WasfatyProject2\Wasfaty.API\obj\Debug\net9.0\ref\Wasfaty.API.dll
+D:\كورسات ابو هد هود\مشاريع github\WasfatyProject2\Wasfaty.API\bin\Debug\net9.0\BouncyCastle.Cryptography.dll
+D:\كورسات ابو هد هود\مشاريع github\WasfatyProject2\Wasfaty.API\bin\Debug\net9.0\MailKit.dll
+D:\كورسات ابو هد هود\مشاريع github\WasfatyProject2\Wasfaty.API\bin\Debug\net9.0\MimeKit.dll
+D:\كورسات ابو هد هود\مشاريع github\WasfatyProject2\Wasfaty.API\bin\Debug\net9.0\Newtonsoft.Json.dll
+D:\كورسات ابو هد هود\مشاريع github\WasfatyProject2\Wasfaty.API\bin\Debug\net9.0\SendGrid.dll
+D:\كورسات ابو هد هود\مشاريع github\WasfatyProject2\Wasfaty.API\bin\Debug\net9.0\StarkbankEcdsa.dll
