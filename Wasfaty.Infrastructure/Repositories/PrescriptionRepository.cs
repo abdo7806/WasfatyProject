@@ -54,15 +54,57 @@ public class PrescriptionRepository : IPrescriptionRepository
 
     public async Task<bool>DeleteAsync(int id)
     {
-        var prescription = await GetByIdAsync(id);
-        if (prescription != null)
+
+        using (var transaction = await _context.Database.BeginTransactionAsync())
         {
-            _context.Prescriptions.Remove(prescription);
-            await _context.SaveChangesAsync();
-            return true;
+            try
+            {
+                var prescription = await GetByIdAsync(id);
+
+                if (prescription == null)
+                {
+                    return false; // الوصفة غير موجودة
+                }
+
+                var prescriptionItems = prescription.PrescriptionItems;
+                if(prescriptionItems == null || !prescriptionItems.Any())
+                {
+                    return false; // لا توجد عناصر في الوصفة
+                }
+
+                foreach ( var prescriptionItem in prescriptionItems)
+                {
+                    if (prescriptionItem != null)
+                    {
+                        _context.PrescriptionItems.Remove(prescriptionItem);
+                    }
+                }
+
+                if (prescription != null)
+                {
+                    _context.Prescriptions.Remove(prescription);
+                }
+
+                // حفظ التغييرات
+                await _context.SaveChangesAsync();
+
+                // تأكيد المعاملة
+                await transaction.CommitAsync();
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                // إلغاء المعاملة في حالة حدوث خطأ
+                await transaction.RollbackAsync();
+                Console.WriteLine(ex.Message);
+                return false;
+            }
         }
 
-        return false;
+
+    
+
     }
 
     public async Task<List<Prescription>> GetByDoctorIdAsync(int doctorId)
