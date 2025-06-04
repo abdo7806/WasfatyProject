@@ -31,23 +31,50 @@ namespace Wasfaty.Infrastructure.Repositories
 
         public async Task<bool> DeleteAsync(int id)
         {
-            var patient = await _context.Patients.FindAsync(id);
-            if (patient != null)
+
+            using (var transaction = await _context.Database.BeginTransactionAsync())
             {
                 try
                 {
+    
+                    var patient = await GetByIdAsync(id);
+
+                    if (patient == null)
+                    {
+                        return false; // المريض غير موجود
+                    }
+
+                    var User = patient.User;
+                    if (User == null)
+                    {
+                        return false; // المستخدم غير موجود
+                    }
+
                     _context.Patients.Remove(patient);
+
+                    _context.Users.Remove(User);
+                     
+
+                  
+
+                    // حفظ التغييرات
                     await _context.SaveChangesAsync();
+
+                    // تأكيد المعاملة
+                    await transaction.CommitAsync();
+
                     return true;
                 }
-                catch (Exception e)
+                catch (Exception ex)
                 {
+                    // إلغاء المعاملة في حالة حدوث خطأ
+                    await transaction.RollbackAsync();
+                    Console.WriteLine(ex.Message);
                     return false;
-
                 }
-
             }
-            return false;
+
+
         }
 
         public async Task<IEnumerable<PatientDto>> GetAllAsync()

@@ -67,15 +67,51 @@ public class DoctorRepository : IDoctorRepository
 
     public async Task<bool> DeleteAsync(int id)
     {
-        var doctor = await GetByIdAsync(id);
-        if (doctor != null)
+
+
+        using (var transaction = await _context.Database.BeginTransactionAsync())
         {
-            _context.Doctors.Remove(doctor);
-            await _context.SaveChangesAsync();
-            return true;
+            try
+            {
+
+                var doctor = await GetByIdAsync(id);
+
+                if (doctor == null)
+                {
+                    return false; // الطبيب غير موجود
+                }
+
+                var User = doctor.User;
+                if (User == null)
+                {
+                    return false; // المستخدم غير موجود
+                }
+
+                _context.Doctors.Remove(doctor);
+
+                _context.Users.Remove(User);
+
+
+
+
+                // حفظ التغييرات
+                await _context.SaveChangesAsync();
+
+                // تأكيد المعاملة
+                await transaction.CommitAsync();
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                // إلغاء المعاملة في حالة حدوث خطأ
+                await transaction.RollbackAsync();
+                Console.WriteLine(ex.Message);
+                return false;
+            }
         }
 
-        return false;
+
     }
 
     public async Task<Doctor?> GetByUserIdAsync(int userId)

@@ -53,14 +53,59 @@ public class PharmacistRepository : IPharmacistRepository
 
     public async Task<bool> DeleteAsync(int id)
     {
-        var pharmacist = await GetByIdAsync(id);
-        if (pharmacist != null)
+
+
+        using (var transaction = await _context.Database.BeginTransactionAsync())
         {
-            _context.Pharmacists.Remove(pharmacist);
-            await _context.SaveChangesAsync();
-            return true;
+            try
+            {
+
+                var pharmacist = await GetByIdAsync(id);
+
+                if (pharmacist == null)
+                {
+                    return false; // الصيدلي غير موجود
+                }
+
+                var User = pharmacist.User;
+                if (User == null)
+                {
+                    return false; // المستخدم غير موجود
+                }
+
+                _context.Pharmacists.Remove(pharmacist);
+
+                _context.Users.Remove(User);
+
+
+
+
+                // حفظ التغييرات
+                await _context.SaveChangesAsync();
+
+                // تأكيد المعاملة
+                await transaction.CommitAsync();
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                // إلغاء المعاملة في حالة حدوث خطأ
+                await transaction.RollbackAsync();
+                Console.WriteLine(ex.Message);
+                return false;
+            }
         }
-        return false;
+
+
+        /*  var pharmacist = await GetByIdAsync(id);
+          if (pharmacist != null)
+          {
+              _context.Pharmacists.Remove(pharmacist);
+              await _context.SaveChangesAsync();
+              return true;
+          }
+          return false;*/
     }
 
     public async Task<List<Pharmacist>> GetByPharmacyIdAsync(int PharmacyId)
