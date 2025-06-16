@@ -73,7 +73,7 @@ namespace Wasfaty.API.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
        // [Authorize(Roles = Roles.Admin)]
 
-        public async Task<ActionResult> CreateUser(CreateUserDto userDto)
+        public async Task<ActionResult> CreateUser([FromBody] CreateUserDto userDto)
         {
             if (userDto == null || string.IsNullOrEmpty(userDto.FullName) || string.IsNullOrEmpty(userDto.Email) || string.IsNullOrEmpty(userDto.Password))
             {
@@ -98,7 +98,7 @@ namespace Wasfaty.API.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
        // [Authorize(Roles = Roles.Admin)]
 
-        public async Task<ActionResult<UserDto>> UpdateUser(int id, UpdateUserDto userDto)
+        public async Task<ActionResult<UserDto>> UpdateUser(int id, [FromBody] UpdateUserDto userDto)
         {
 
             if (userDto == null || string.IsNullOrEmpty(userDto.FullName) || string.IsNullOrEmpty(userDto.Email) )

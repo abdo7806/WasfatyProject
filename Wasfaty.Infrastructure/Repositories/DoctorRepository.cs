@@ -13,27 +13,7 @@ public class DoctorRepository : IDoctorRepository
 
     public async Task<IEnumerable<Doctor>> GetAllAsync()
     {
-        /*   await _context.Users
-         .Select(user => new UserDto
-         {
-             Id = user.Id,
-             FullName = user.FullName,
-             Email = user.Email,
-             Role = (UserRoleEnum)user.RoleId,
-             CreatedAt = user.CreatedAt
-         }).ToListAsync();*/
 
-        /*  return await _context.Doctors.Include(d => d.MedicalCenter)
-              .Include(d => d.User).Select(doctor => new DoctorDto
-              {
-                  Id = doctor.Id,
-                  UserId = doctor.UserId,
-                  MedicalCenterId = doctor.MedicalCenterId,
-                  Specialization = doctor.Specialization,
-                  LicenseNumber = doctor.LicenseNumber,
-              })            .Include(d => d.Pharmacy)
-              .Include(d => d.User)
-              .ToListAsync();*/
 
         return await _context.Doctors
             .Include(d => d.MedicalCenter)

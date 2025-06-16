@@ -98,14 +98,7 @@ public class PharmacistRepository : IPharmacistRepository
         }
 
 
-        /*  var pharmacist = await GetByIdAsync(id);
-          if (pharmacist != null)
-          {
-              _context.Pharmacists.Remove(pharmacist);
-              await _context.SaveChangesAsync();
-              return true;
-          }
-          return false;*/
+
     }
 
     public async Task<List<Pharmacist>> GetByPharmacyIdAsync(int PharmacyId)
@@ -189,30 +182,5 @@ public class PharmacistRepository : IPharmacistRepository
       
     }
 
-    // GET: api/pharmacistdashboard/recent
-  /*  [HttpGet("recent")]
-    public async Task<ActionResult<IEnumerable<RecentPrescription>>> GetRecentPrescriptions()
-    {
-        var pharmacistId = GetCurrentPharmacistId();
-        var today = DateTime.Today;
-
-        var recent = await _context.Prescriptions
-            .Where(p => p.PharmacyId == pharmacistId && p.CreatedAt.Date >= today.AddDays(-7))
-            .OrderByDescending(p => p.CreatedAt)
-            .Take(5)
-            .Select(p => new RecentPrescription
-            {
-                Id = p.Id,
-                PatientName = p.Patient.FullName,
-                DoctorName = p.Doctor.FullName,
-                Date = p.CreatedAt,
-                Status = p.Status == "Dispensed" ? "مصروفة" : "معلقة",
-                IsUrgent = p.IsUrgent
-            })
-            .ToListAsync();
-
-        return Ok(recent);
-    }
-    */
-
+ 
 }

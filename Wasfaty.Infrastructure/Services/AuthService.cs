@@ -5,6 +5,7 @@ using Azure.Core;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using Wasfaty.Application.DTOs.Auth;
+using Wasfaty.Application.DTOs.Patients;
 using Wasfaty.Application.DTOs.Users;
 using Wasfaty.Application.Interfaces;
 
@@ -83,6 +84,9 @@ public class AuthService : IAuthService
         };
 
         var createdUser = await _authRepository.CreateAsync(user);
+
+     
+      //  var createPatientDto = await 
 
         return new UserDto
         {

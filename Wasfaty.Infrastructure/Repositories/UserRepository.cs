@@ -37,14 +37,22 @@ namespace Wasfaty.Infrastructure.Repositories
 
         public async Task<User> AddAsync(User user)
         {
-            int x = _context.Users.Where(u=> u.Email == user.Email).Count();
-            if (x == 0)
+            try
             {
-                await _context.Users.AddAsync(user);
-                await _context.SaveChangesAsync();
-                return user;
+                // نتحقق من ان مافي مستخدم بنفس البريد الاكتروني
+                int x = _context.Users.Where(u => u.Email == user.Email).Count();
+                if (x == 0)
+                {
+                    await _context.Users.AddAsync(user);
+                    await _context.SaveChangesAsync();
+                    return user;
+                }
+                return null;
             }
-            return null;
+            catch (Exception ex)
+            {
+                return null;
+            }
 
         }
 
