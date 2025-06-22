@@ -66,11 +66,11 @@ public class PrescriptionRepository : IPrescriptionRepository
                     return false; // الوصفة غير موجودة
                 }
 
-                var prescriptionItems = prescription.PrescriptionItems;
-                if(prescriptionItems == null || !prescriptionItems.Any())
+               var prescriptionItems = prescription.PrescriptionItems;
+               /* if(prescriptionItems == null || !prescriptionItems.Any())
                 {
                     return false; // لا توجد عناصر في الوصفة
-                }
+                }*/
 
                 foreach ( var prescriptionItem in prescriptionItems)
                 {

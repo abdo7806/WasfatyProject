@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 using Wasfaty.Application.DTOs.Auth;
 using Wasfaty.Application.DTOs.Users;
 using Wasfaty.Application.Interfaces;
@@ -56,8 +57,18 @@ public class AuthController : ControllerBase
 
 
     [HttpPost("change-password")]
+    [Authorize]
     public async Task<IActionResult> ChangePasswordAsync([FromBody] ChangePasswordDto model)
     {
+        // استخراج UserId من التوكن
+        var userIdFromToken = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+        // التحقق من أن UserId من التوكن يتطابق مع UserId المرسل
+        if (userIdFromToken != model.UserId.ToString())
+        {
+            return Unauthorized("User ID does not match.");
+        }
+
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
 
