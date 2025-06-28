@@ -81,18 +81,23 @@ public class PrescriptionService : IPrescriptionService
                 Id = pi.Id,
                 PrescriptionId = pi.PrescriptionId,
                 MedicationId = pi.MedicationId,
+                CustomMedicationName = pi.CustomMedicationName,
+                CustomMedicationDescription = pi.CustomMedicationDescription,
+                CustomDosageForm = pi.CustomDosageForm,
+                CustomStrength = pi.CustomStrength,
                 Dosage = pi.Dosage,
                 Frequency = pi.Frequency,
                 Duration = pi.Duration,
             }).ToList(),
         };
-  
-    
+
+
     }
 
     public async Task<IEnumerable<PrescriptionDto>> GetAllAsync()
     {
         var prescriptions = await _prescriptionRepository.GetAllAsync();
+
         return prescriptions.Select(p => new PrescriptionDto
         {
             Id = p.Id,
@@ -140,18 +145,22 @@ public class PrescriptionService : IPrescriptionService
                     CreatedAt = p.Patient.User.CreatedAt,
                 },
             },
-                PrescriptionItems = p.PrescriptionItems.Select(pi => new PrescriptionItemDto
-                {
-                    Id = pi.Id,
-                    PrescriptionId = pi.PrescriptionId,
-                    MedicationId = pi.MedicationId,
-                    Dosage = pi.Dosage,
-                    Frequency = pi.Frequency,
-                    Duration = pi.Duration,
-                    
-                }).ToList(),
+            PrescriptionItems = p.PrescriptionItems.Select(pi => new PrescriptionItemDto
+            {
+                Id = pi.Id,
+                PrescriptionId = pi.PrescriptionId,
+                MedicationId = pi.MedicationId,
+                CustomMedicationName = pi.CustomMedicationName,
+                CustomMedicationDescription = pi.CustomMedicationDescription,
+                CustomDosageForm = pi.CustomDosageForm,
+                CustomStrength = pi.CustomStrength,
+                Dosage = pi.Dosage,
+                Frequency = pi.Frequency,
+                Duration = pi.Duration,
+
+            }).ToList(),
         }).ToList();
-   
+
     }
 
     public async Task<PrescriptionDto> CreateAsync(CreatePrescriptionDto prescriptionDto)
@@ -162,7 +171,7 @@ public class PrescriptionService : IPrescriptionService
             PatientId = prescriptionDto.PatientId,
             IssuedDate = prescriptionDto.IssuedDate,
             IsDispensed = prescriptionDto.IsDispensed,
-   
+
         };
 
         var addedPrescription = await _prescriptionRepository.AddAsync(prescription);
@@ -199,7 +208,7 @@ public class PrescriptionService : IPrescriptionService
 
     public async Task<bool> DeleteAsync(int id)
     {
-       return await _prescriptionRepository.DeleteAsync(id);
+        return await _prescriptionRepository.DeleteAsync(id);
     }
 
     public async Task<List<PrescriptionDto>> GetByDoctorIdAsync(int doctorId)
@@ -251,6 +260,10 @@ public class PrescriptionService : IPrescriptionService
                 Id = pi.Id,
                 PrescriptionId = pi.PrescriptionId,
                 MedicationId = pi.MedicationId,
+                CustomMedicationName = pi.CustomMedicationName,
+                CustomMedicationDescription = pi.CustomMedicationDescription,
+                CustomDosageForm = pi.CustomDosageForm,
+                CustomStrength = pi.CustomStrength,
                 Dosage = pi.Dosage,
                 Frequency = pi.Frequency,
                 Duration = pi.Duration,
@@ -315,6 +328,10 @@ public class PrescriptionService : IPrescriptionService
                 Id = pi.Id,
                 PrescriptionId = pi.PrescriptionId,
                 MedicationId = pi.MedicationId,
+                CustomMedicationName = pi.CustomMedicationName,
+                CustomMedicationDescription = pi.CustomMedicationDescription,
+                CustomDosageForm = pi.CustomDosageForm,
+                CustomStrength = pi.CustomStrength,
                 Dosage = pi.Dosage,
                 Frequency = pi.Frequency,
                 Duration = pi.Duration,
@@ -383,6 +400,10 @@ public class PrescriptionService : IPrescriptionService
                 Id = pi.Id,
                 PrescriptionId = pi.PrescriptionId,
                 MedicationId = pi.MedicationId,
+                CustomMedicationName = pi.CustomMedicationName,
+                CustomMedicationDescription = pi.CustomMedicationDescription,
+                CustomDosageForm = pi.CustomDosageForm,
+                CustomStrength = pi.CustomStrength,
                 Dosage = pi.Dosage,
                 Frequency = pi.Frequency,
                 Duration = pi.Duration,
@@ -446,6 +467,10 @@ public class PrescriptionService : IPrescriptionService
                 Id = pi.Id,
                 PrescriptionId = pi.PrescriptionId,
                 MedicationId = pi.MedicationId,
+                CustomMedicationName = pi.CustomMedicationName,
+                CustomMedicationDescription = pi.CustomMedicationDescription,
+                CustomDosageForm = pi.CustomDosageForm,
+                CustomStrength = pi.CustomStrength,
                 Dosage = pi.Dosage,
                 Frequency = pi.Frequency,
                 Duration = pi.Duration,

@@ -99,13 +99,13 @@ public class PrescriptionItemController : ControllerBase
 
         }
 
-        var medication = await _medicationService.GetAllAsync();
+        /*var medication = await _medicationService.GetAllAsync();
 
         if (!medication.Any(d => d.Id == prescriptionItemDto.MedicationId))
         {
             return BadRequest("الدواى مش موجود");
 
-        }
+        }*/
 
 
         var prescriptionItem = await _prescriptionItemService.CreateAsync(prescriptionItemDto);
@@ -131,13 +131,13 @@ public class PrescriptionItemController : ControllerBase
             return BadRequest("Invalid ID.");
         }
 
-        var medication = await _medicationService.GetAllAsync();
+       /* var medication = await _medicationService.GetAllAsync();
 
         if (!medication.Any(d => d.Id == prescriptionItemDto.MedicationId))
         {
             return BadRequest("الدواى مش موجود");
 
-        }
+        }*/
 
         var existingPrescriptionItem = await _prescriptionItemService.GetByIdAsync(id);
         if (existingPrescriptionItem == null)

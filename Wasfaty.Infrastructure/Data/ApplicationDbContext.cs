@@ -74,7 +74,15 @@ public class ApplicationDbContext : DbContext
         modelBuilder.Entity<PrescriptionItem>()
             .HasOne(pi => pi.Medication)
             .WithMany(m => m.PrescriptionItems)
-            .HasForeignKey(pi => pi.MedicationId);
+            .HasForeignKey(pi => pi.MedicationId)
+            .OnDelete(DeleteBehavior.SetNull); // SET NULL عند الحذف
+
+        // تكوين القيد CHECK
+        modelBuilder.Entity<PrescriptionItem>()
+            .HasCheckConstraint(
+                "CHK_PrescriptionItem_Medication",
+                "([MedicationId] IS NOT NULL OR ([CustomMedicationName] IS NOT NULL AND [CustomMedicationDescription] IS NOT NULL))");
+
 
         // جدول DispenseRecords
         modelBuilder.Entity<DispenseRecord>()
