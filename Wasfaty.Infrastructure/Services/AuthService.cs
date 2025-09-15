@@ -49,10 +49,8 @@ public class AuthService : IAuthService
 
         if (user == null || !BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash))
         {
-            //throw new UnauthorizedAccessException("Invalid credentials");
             return null;
         }
-
         var token = GenerateJwtToken(user);
 
         return new LoginResponseDto 

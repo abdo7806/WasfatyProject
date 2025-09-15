@@ -98,7 +98,8 @@ public class PrescriptionItemService : IPrescriptionItemService
             (string.IsNullOrEmpty(prescriptionItemDto.CustomMedicationName) ||
             string.IsNullOrEmpty(prescriptionItemDto.CustomMedicationDescription)))
         {
-            throw new ArgumentException("يجب إدخال إما دواء موجود أو بيانات دواء مخصص");
+            // throw new ArgumentException("يجب إدخال إما دواء موجود أو بيانات دواء مخصص");
+            return null;
         }
 
         // إذا كان دواءً موجوداً، التحقق من وجوده
@@ -107,7 +108,9 @@ public class PrescriptionItemService : IPrescriptionItemService
             var medicationExists = await _medicationRepository.GetAllAsync();
             if (medicationExists == null)
             {
-                throw new KeyNotFoundException("الدواء المحدد غير موجود");
+               // throw new KeyNotFoundException("الدواء المحدد غير موجود");
+                return null;
+
             }
         }
 
@@ -148,13 +151,14 @@ public class PrescriptionItemService : IPrescriptionItemService
             (string.IsNullOrEmpty(prescriptionItemDto.CustomMedicationName) ||
             string.IsNullOrEmpty(prescriptionItemDto.CustomMedicationDescription)))
         {
-            throw new ArgumentException("يجب إدخال إما دواء موجود أو بيانات دواء مخصص");
+            // throw new ArgumentException("يجب إدخال إما دواء موجود أو بيانات دواء مخصص");
+            return null;
         }
 
         // إذا كان دواءً موجوداً، التحقق من وجوده
         if (prescriptionItemDto.MedicationId.HasValue)
         {
-            var medicationExists = await _medicationRepository.GetAllAsync();
+            var medicationExists = await _medicationRepository.GetByIdAsync(prescriptionItemDto.MedicationId ?? 0);
             if (medicationExists == null)
             {
                 throw new KeyNotFoundException("الدواء المحدد غير موجود");

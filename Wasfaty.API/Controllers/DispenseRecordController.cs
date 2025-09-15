@@ -8,6 +8,7 @@ using Wasfaty.Application.Interfaces;
 [Route("api/[controller]")]
 [ApiController]
 //[Authorize(Roles = Roles.Admin)]
+[Authorize(Roles = Roles.Admin + "," + Roles.Pharmacist)] // استثناء
 
 public class DispenseRecordController : ControllerBase
 {

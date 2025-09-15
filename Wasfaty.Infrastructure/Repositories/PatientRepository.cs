@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using Wasfaty.Application.DTOs.Doctors;
+using Wasfaty.Application.DTOs.MedicalCenters;
 using Wasfaty.Application.DTOs.Patients;
 using Wasfaty.Application.DTOs.Prescriptions;
 using Wasfaty.Application.DTOs.Users;
@@ -174,6 +175,13 @@ namespace Wasfaty.Infrastructure.Repositories
                         Role = (UserRoleEnum)prescription.Doctor.User.RoleId,
                         CreatedAt = prescription.Doctor.User.CreatedAt,
                     },
+                    MedicalCenter = new MedicalCenterDto
+                    {
+                        Id = prescription.Doctor.MedicalCenter.Id,
+                        Name = prescription.Doctor.MedicalCenter.Name,
+                        Address = prescription.Doctor.MedicalCenter.Address,
+                        Phone = prescription.Doctor.MedicalCenter.Phone,
+                    }
 
                 },
                 Patient = new PatientDto
