@@ -10,6 +10,7 @@ using Wasfaty.Application.Interfaces.Repositories;
 using Wasfaty.Infrastructure.Data;
 using Wasfaty.Infrastructure.Repositories;
 using Wasfaty.Infrastructure.Repositories.Interfaces;
+using Wasfaty.Infrastructure.Seeders;
 using Wasfaty.Infrastructure.Services;
 using Wasfaty.Infrastructure.Services.EmailServices;
 
@@ -73,9 +74,9 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// ≈÷«›… DbContext «·Œ«’ »ﬂ „⁄ ≈⁄œ«œ «·« ’«·
-builder.Services.AddDbContext<WasfatyDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+//// ≈÷«›… DbContext «·Œ«’ »ﬂ „⁄ ≈⁄œ«œ «·« ’«·
+//builder.Services.AddDbContext<WasfatyDbContext>(options =>
+//    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 builder.Services.AddScoped<IAuthRepository, AuthRepository>();
 builder.Services.AddScoped<IAuthService, AuthService>();
@@ -134,6 +135,82 @@ builder.Services.AddSwaggerGen();
 
 
 var app = builder.Build();
+
+//using (var scope = app.Services.CreateScope())
+//{
+//    var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+//    db.Database.Migrate();
+
+//    await ApplicationDbSeeder.SeedAsync(scope.ServiceProvider);
+
+//}
+
+//using (var scope = app.Services.CreateScope())
+//{
+//    try
+//    {
+//        var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+
+//        //  ÿ»Ìﬁ «·‹ Migrations
+//        await db.Database.MigrateAsync();
+
+//        //  ‘€Ì· «·‹ Seeder
+//        await ApplicationDbSeeder.SeedAsync(scope.ServiceProvider);
+
+//        Console.WriteLine("Database migration and seeding completed successfully.");
+//    }
+//    catch (Exception ex)
+//    {
+//        Console.WriteLine($"An error occurred while migrating/seeding the database: {ex.Message}");
+//        throw;
+//    }
+//}
+
+
+//using (var scope = app.Services.CreateScope())
+//{
+//    try
+//    {
+//        var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+
+//        // ??  Õﬁﬁ Â· ›ÌÂ Migrations ÃœÌœ… ›ﬁÿ
+//        if (db.Database.GetPendingMigrations().Any())
+//        {
+//            await db.Database.MigrateAsync();
+//        }
+
+//        // ?? ‘€· Seeder (Ì›÷·  Œ·ÌÂ –ﬂÌ)
+//        await ApplicationDbSeeder.SeedAsync(scope.ServiceProvider);
+
+//        Console.WriteLine("Database migration and seeding completed successfully.");
+//    }
+//    catch (Exception ex)
+//    {
+//        Console.WriteLine($"An error occurred while migrating/seeding the database: {ex.Message}");
+//        // ? ·«  ⁄„· throw Â‰«
+//    }
+//}
+
+using (var scope = app.Services.CreateScope())
+{
+    try
+    {
+        var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+
+        if ((await db.Database.GetPendingMigrationsAsync()).Any())
+        {
+            await db.Database.MigrateAsync();
+        }
+
+        await ApplicationDbSeeder.SeedAsync(scope.ServiceProvider);
+
+        Console.WriteLine("Database migration and seeding completed successfully.");
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Migration error: {ex.Message}");
+    }
+}
 
 //  „ﬂÌ‰ Swagger
 if (app.Environment.IsDevelopment())

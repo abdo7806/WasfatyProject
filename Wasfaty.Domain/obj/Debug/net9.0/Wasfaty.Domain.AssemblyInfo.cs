@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Wasfaty.Domain")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+0d461a11ead2525423effb12a18a748a0b3d6c9e")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+9938a6c38cb77c71143f2a7108ce9e1957950819")]
 [assembly: System.Reflection.AssemblyProductAttribute("Wasfaty.Domain")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Wasfaty.Domain")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

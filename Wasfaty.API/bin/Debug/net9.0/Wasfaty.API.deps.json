@@ -1142,6 +1142,7 @@
       "Wasfaty.Application/1.0.0": {
         "dependencies": {
           "FluentValidation": "11.11.0",
+          "Microsoft.Extensions.DependencyInjection": "9.0.4",
           "Wasfaty.Domain": "1.0.0"
         },
         "runtime": {

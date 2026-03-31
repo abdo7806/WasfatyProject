@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "Vr6N7pdVhto=",
+  "dgSpecHash": "473U7kyhr8Q=",
   "success": true,
-  "projectFilePath": "D:\\كورسات ابو هد هود\\مشاريع github\\WasfatyProject2\\Wasfaty.Infrastructure\\Wasfaty.Infrastructure.csproj",
+  "projectFilePath": "D:\\كورسات ابو هد هود\\WasfatyProject2\\Wasfaty.Infrastructure\\Wasfaty.Infrastructure.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\Zbook\\.nuget\\packages\\azure.core\\1.38.0\\azure.core.1.38.0.nupkg.sha512",
     "C:\\Users\\Zbook\\.nuget\\packages\\azure.identity\\1.11.4\\azure.identity.1.11.4.nupkg.sha512",
@@ -72,7 +72,7 @@
     "C:\\Users\\Zbook\\.nuget\\packages\\system.io.pipelines\\7.0.0\\system.io.pipelines.7.0.0.nupkg.sha512",
     "C:\\Users\\Zbook\\.nuget\\packages\\system.memory\\4.5.4\\system.memory.4.5.4.nupkg.sha512",
     "C:\\Users\\Zbook\\.nuget\\packages\\system.memory.data\\1.0.2\\system.memory.data.1.0.2.nupkg.sha512",
-    "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder\\system.numerics.vectors\\4.5.0\\system.numerics.vectors.4.5.0.nupkg.sha512",
+    "C:\\Users\\Zbook\\.nuget\\packages\\system.numerics.vectors\\4.5.0\\system.numerics.vectors.4.5.0.nupkg.sha512",
     "C:\\Users\\Zbook\\.nuget\\packages\\system.reflection.metadata\\7.0.0\\system.reflection.metadata.7.0.0.nupkg.sha512",
     "C:\\Users\\Zbook\\.nuget\\packages\\system.runtime.caching\\6.0.0\\system.runtime.caching.6.0.0.nupkg.sha512",
     "C:\\Users\\Zbook\\.nuget\\packages\\system.runtime.compilerservices.unsafe\\6.0.0\\system.runtime.compilerservices.unsafe.6.0.0.nupkg.sha512",

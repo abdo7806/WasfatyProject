@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "D:\\كورسات ابو هد هود\\مشاريع github\\WasfatyProject2\\Wasfaty.Application\\Wasfaty.Application.csproj": {}
+    "D:\\كورسات ابو هد هود\\WasfatyProject2\\Wasfaty.Application\\Wasfaty.Application.csproj": {}
   },
   "projects": {
-    "D:\\كورسات ابو هد هود\\مشاريع github\\WasfatyProject2\\Wasfaty.Application\\Wasfaty.Application.csproj": {
+    "D:\\كورسات ابو هد هود\\WasfatyProject2\\Wasfaty.Application\\Wasfaty.Application.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\كورسات ابو هد هود\\مشاريع github\\WasfatyProject2\\Wasfaty.Application\\Wasfaty.Application.csproj",
+        "projectUniqueName": "D:\\كورسات ابو هد هود\\WasfatyProject2\\Wasfaty.Application\\Wasfaty.Application.csproj",
         "projectName": "Wasfaty.Application",
-        "projectPath": "D:\\كورسات ابو هد هود\\مشاريع github\\WasfatyProject2\\Wasfaty.Application\\Wasfaty.Application.csproj",
+        "projectPath": "D:\\كورسات ابو هد هود\\WasfatyProject2\\Wasfaty.Application\\Wasfaty.Application.csproj",
         "packagesPath": "C:\\Users\\Zbook\\.nuget\\packages\\",
-        "outputPath": "D:\\كورسات ابو هد هود\\مشاريع github\\WasfatyProject2\\Wasfaty.Application\\obj\\",
+        "outputPath": "D:\\كورسات ابو هد هود\\WasfatyProject2\\Wasfaty.Application\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages",
@@ -33,8 +33,8 @@
           "net9.0": {
             "targetAlias": "net9.0",
             "projectReferences": {
-              "D:\\كورسات ابو هد هود\\مشاريع github\\WasfatyProject2\\Wasfaty.Domain\\Wasfaty.Domain.csproj": {
-                "projectPath": "D:\\كورسات ابو هد هود\\مشاريع github\\WasfatyProject2\\Wasfaty.Domain\\Wasfaty.Domain.csproj"
+              "D:\\كورسات ابو هد هود\\WasfatyProject2\\Wasfaty.Domain\\Wasfaty.Domain.csproj": {
+                "projectPath": "D:\\كورسات ابو هد هود\\WasfatyProject2\\Wasfaty.Domain\\Wasfaty.Domain.csproj"
               }
             }
           }
@@ -58,6 +58,10 @@
             "FluentValidation": {
               "target": "Package",
               "version": "[11.11.0, )"
+            },
+            "Microsoft.Extensions.DependencyInjection": {
+              "target": "Package",
+              "version": "[9.0.0, )"
             }
           },
           "imports": [
@@ -80,14 +84,14 @@
         }
       }
     },
-    "D:\\كورسات ابو هد هود\\مشاريع github\\WasfatyProject2\\Wasfaty.Domain\\Wasfaty.Domain.csproj": {
+    "D:\\كورسات ابو هد هود\\WasfatyProject2\\Wasfaty.Domain\\Wasfaty.Domain.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\كورسات ابو هد هود\\مشاريع github\\WasfatyProject2\\Wasfaty.Domain\\Wasfaty.Domain.csproj",
+        "projectUniqueName": "D:\\كورسات ابو هد هود\\WasfatyProject2\\Wasfaty.Domain\\Wasfaty.Domain.csproj",
         "projectName": "Wasfaty.Domain",
-        "projectPath": "D:\\كورسات ابو هد هود\\مشاريع github\\WasfatyProject2\\Wasfaty.Domain\\Wasfaty.Domain.csproj",
+        "projectPath": "D:\\كورسات ابو هد هود\\WasfatyProject2\\Wasfaty.Domain\\Wasfaty.Domain.csproj",
         "packagesPath": "C:\\Users\\Zbook\\.nuget\\packages\\",
-        "outputPath": "D:\\كورسات ابو هد هود\\مشاريع github\\WasfatyProject2\\Wasfaty.Domain\\obj\\",
+        "outputPath": "D:\\كورسات ابو هد هود\\WasfatyProject2\\Wasfaty.Domain\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages",

@@ -57,13 +57,15 @@ public class ApplicationDbContext : DbContext
         modelBuilder.Entity<Patient>()
             .HasMany(p => p.Prescriptions)
             .WithOne(pr => pr.Patient)
-            .HasForeignKey(pr => pr.PatientId);
+            .HasForeignKey(pr => pr.PatientId)
+    .OnDelete(DeleteBehavior.NoAction);
 
         // جدول Prescriptions
         modelBuilder.Entity<Prescription>()
-            .HasOne(pr => pr.Doctor)
-            .WithMany(d => d.Prescriptions)
-            .HasForeignKey(pr => pr.DoctorId);
+    .HasOne(pr => pr.Doctor)
+    .WithMany(d => d.Prescriptions)
+    .HasForeignKey(pr => pr.DoctorId)
+    .OnDelete(DeleteBehavior.NoAction);
 
         modelBuilder.Entity<Prescription>()
             .HasMany(pr => pr.PrescriptionItems)
@@ -71,11 +73,11 @@ public class ApplicationDbContext : DbContext
             .HasForeignKey(pi => pi.PrescriptionId);
 
         // جدول PrescriptionItems
-        modelBuilder.Entity<PrescriptionItem>()
-            .HasOne(pi => pi.Medication)
-            .WithMany(m => m.PrescriptionItems)
-            .HasForeignKey(pi => pi.MedicationId)
-            .OnDelete(DeleteBehavior.SetNull); // SET NULL عند الحذف
+        modelBuilder.Entity<Prescription>()
+            .HasMany(pr => pr.PrescriptionItems)
+            .WithOne(pi => pi.Prescription)
+            .HasForeignKey(pi => pi.PrescriptionId)
+            .OnDelete(DeleteBehavior.NoAction);
 
         // تكوين القيد CHECK
         modelBuilder.Entity<PrescriptionItem>()
@@ -88,7 +90,9 @@ public class ApplicationDbContext : DbContext
         modelBuilder.Entity<DispenseRecord>()
             .HasOne(dr => dr.Prescription)
             .WithOne(p => p.DispenseRecord)
-            .HasForeignKey<DispenseRecord>(dr => dr.PrescriptionId);
+            .HasForeignKey<DispenseRecord>(dr => dr.PrescriptionId)
+    .OnDelete(DeleteBehavior.NoAction);
+
 
         modelBuilder.Entity<DispenseRecord>()
             .HasOne(dr => dr.Pharmacist)
@@ -105,5 +109,12 @@ public class ApplicationDbContext : DbContext
             .HasOne(ph => ph.Pharmacy)
             .WithMany(p => p.Pharmacists)
             .HasForeignKey(ph => ph.PharmacyId);
+
+
+        foreach (var relationship in modelBuilder.Model.GetEntityTypes()
+         .SelectMany(e => e.GetForeignKeys()))
+        {
+            relationship.DeleteBehavior = DeleteBehavior.NoAction;
+        }
     }
 }

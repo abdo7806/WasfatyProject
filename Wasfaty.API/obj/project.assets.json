@@ -1809,6 +1809,7 @@
         "framework": ".NETCoreApp,Version=v9.0",
         "dependencies": {
           "FluentValidation": "11.11.0",
+          "Microsoft.Extensions.DependencyInjection": "9.0.0",
           "Wasfaty.Domain": "1.0.0"
         },
         "compile": {
@@ -5346,11 +5347,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "D:\\كورسات ابو هد هود\\مشاريع github\\WasfatyProject2\\Wasfaty.API\\Wasfaty.API.csproj",
+      "projectUniqueName": "D:\\كورسات ابو هد هود\\WasfatyProject2\\Wasfaty.API\\Wasfaty.API.csproj",
       "projectName": "Wasfaty.API",
-      "projectPath": "D:\\كورسات ابو هد هود\\مشاريع github\\WasfatyProject2\\Wasfaty.API\\Wasfaty.API.csproj",
+      "projectPath": "D:\\كورسات ابو هد هود\\WasfatyProject2\\Wasfaty.API\\Wasfaty.API.csproj",
       "packagesPath": "C:\\Users\\Zbook\\.nuget\\packages\\",
-      "outputPath": "D:\\كورسات ابو هد هود\\مشاريع github\\WasfatyProject2\\Wasfaty.API\\obj\\",
+      "outputPath": "D:\\كورسات ابو هد هود\\WasfatyProject2\\Wasfaty.API\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages",
@@ -5372,11 +5373,11 @@
         "net9.0": {
           "targetAlias": "net9.0",
           "projectReferences": {
-            "D:\\كورسات ابو هد هود\\مشاريع github\\WasfatyProject2\\Wasfaty.Application\\Wasfaty.Application.csproj": {
-              "projectPath": "D:\\كورسات ابو هد هود\\مشاريع github\\WasfatyProject2\\Wasfaty.Application\\Wasfaty.Application.csproj"
+            "D:\\كورسات ابو هد هود\\WasfatyProject2\\Wasfaty.Application\\Wasfaty.Application.csproj": {
+              "projectPath": "D:\\كورسات ابو هد هود\\WasfatyProject2\\Wasfaty.Application\\Wasfaty.Application.csproj"
             },
-            "D:\\كورسات ابو هد هود\\مشاريع github\\WasfatyProject2\\Wasfaty.Infrastructure\\Wasfaty.Infrastructure.csproj": {
-              "projectPath": "D:\\كورسات ابو هد هود\\مشاريع github\\WasfatyProject2\\Wasfaty.Infrastructure\\Wasfaty.Infrastructure.csproj"
+            "D:\\كورسات ابو هد هود\\WasfatyProject2\\Wasfaty.Infrastructure\\Wasfaty.Infrastructure.csproj": {
+              "projectPath": "D:\\كورسات ابو هد هود\\WasfatyProject2\\Wasfaty.Infrastructure\\Wasfaty.Infrastructure.csproj"
             }
           }
         }

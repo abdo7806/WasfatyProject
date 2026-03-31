@@ -4,7 +4,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using Wasfaty.Infrastructure.Data;
 
 #nullable disable
 
@@ -63,14 +62,12 @@ namespace Wasfaty.Infrastructure.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("LicenseNumber")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("MedicalCenterId")
                         .HasColumnType("int");
 
                     b.Property<string>("Specialization")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("UserId")
@@ -95,7 +92,6 @@ namespace Wasfaty.Infrastructure.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Address")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Name")
@@ -103,7 +99,6 @@ namespace Wasfaty.Infrastructure.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Phone")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
@@ -120,11 +115,9 @@ namespace Wasfaty.Infrastructure.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Description")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("DosageForm")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Name")
@@ -132,7 +125,6 @@ namespace Wasfaty.Infrastructure.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Strength")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
@@ -149,14 +141,12 @@ namespace Wasfaty.Infrastructure.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("BloodType")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTime>("DateOfBirth")
-                        .HasColumnType("datetime2");
+                    b.Property<DateOnly?>("DateOfBirth")
+                        .HasColumnType("date");
 
                     b.Property<string>("Gender")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("UserId")
@@ -179,7 +169,6 @@ namespace Wasfaty.Infrastructure.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("LicenseNumber")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("PharmacyId")
@@ -207,7 +196,6 @@ namespace Wasfaty.Infrastructure.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Address")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Name")
@@ -215,7 +203,6 @@ namespace Wasfaty.Infrastructure.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Phone")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
@@ -260,19 +247,28 @@ namespace Wasfaty.Infrastructure.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<string>("CustomDosageForm")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("CustomMedicationDescription")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("CustomMedicationName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("CustomStrength")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("Dosage")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Duration")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Frequency")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("MedicationId")
+                    b.Property<int?>("MedicationId")
                         .HasColumnType("int");
 
                     b.Property<int>("PrescriptionId")
@@ -284,7 +280,10 @@ namespace Wasfaty.Infrastructure.Migrations
 
                     b.HasIndex("PrescriptionId");
 
-                    b.ToTable("PrescriptionItems");
+                    b.ToTable("PrescriptionItems", t =>
+                        {
+                            t.HasCheckConstraint("CHK_PrescriptionItem_Medication", "([MedicationId] IS NOT NULL OR ([CustomMedicationName] IS NOT NULL AND [CustomMedicationDescription] IS NOT NULL))");
+                        });
                 });
 
             modelBuilder.Entity("Role", b =>
@@ -342,19 +341,19 @@ namespace Wasfaty.Infrastructure.Migrations
                     b.HasOne("Pharmacist", "Pharmacist")
                         .WithMany("DispenseRecords")
                         .HasForeignKey("PharmacistId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.HasOne("Pharmacy", "Pharmacy")
                         .WithMany("DispenseRecords")
                         .HasForeignKey("PharmacyId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.HasOne("Prescription", "Prescription")
                         .WithOne("DispenseRecord")
                         .HasForeignKey("DispenseRecord", "PrescriptionId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("Pharmacist");
@@ -369,13 +368,13 @@ namespace Wasfaty.Infrastructure.Migrations
                     b.HasOne("MedicalCenter", "MedicalCenter")
                         .WithMany("Doctors")
                         .HasForeignKey("MedicalCenterId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.HasOne("User", "User")
                         .WithOne("Doctor")
                         .HasForeignKey("Doctor", "UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("MedicalCenter");
@@ -388,7 +387,7 @@ namespace Wasfaty.Infrastructure.Migrations
                     b.HasOne("User", "User")
                         .WithOne("Patient")
                         .HasForeignKey("Patient", "UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("User");
@@ -399,13 +398,13 @@ namespace Wasfaty.Infrastructure.Migrations
                     b.HasOne("Pharmacy", "Pharmacy")
                         .WithMany("Pharmacists")
                         .HasForeignKey("PharmacyId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.HasOne("User", "User")
                         .WithOne("Pharmacist")
                         .HasForeignKey("Pharmacist", "UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("Pharmacy");
@@ -418,13 +417,13 @@ namespace Wasfaty.Infrastructure.Migrations
                     b.HasOne("Doctor", "Doctor")
                         .WithMany("Prescriptions")
                         .HasForeignKey("DoctorId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.HasOne("Patient", "Patient")
                         .WithMany("Prescriptions")
                         .HasForeignKey("PatientId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("Doctor");
@@ -437,13 +436,12 @@ namespace Wasfaty.Infrastructure.Migrations
                     b.HasOne("Medication", "Medication")
                         .WithMany("PrescriptionItems")
                         .HasForeignKey("MedicationId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.NoAction);
 
                     b.HasOne("Prescription", "Prescription")
-                        .WithMany("Items")
+                        .WithMany("PrescriptionItems")
                         .HasForeignKey("PrescriptionId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("Medication");
@@ -456,7 +454,7 @@ namespace Wasfaty.Infrastructure.Migrations
                     b.HasOne("Role", "Role")
                         .WithMany("Users")
                         .HasForeignKey("RoleId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("Role");
@@ -496,10 +494,9 @@ namespace Wasfaty.Infrastructure.Migrations
 
             modelBuilder.Entity("Prescription", b =>
                 {
-                    b.Navigation("DispenseRecord")
-                        .IsRequired();
+                    b.Navigation("DispenseRecord");
 
-                    b.Navigation("Items");
+                    b.Navigation("PrescriptionItems");
                 });
 
             modelBuilder.Entity("Role", b =>
@@ -509,14 +506,11 @@ namespace Wasfaty.Infrastructure.Migrations
 
             modelBuilder.Entity("User", b =>
                 {
-                    b.Navigation("Doctor")
-                        .IsRequired();
+                    b.Navigation("Doctor");
 
-                    b.Navigation("Patient")
-                        .IsRequired();
+                    b.Navigation("Patient");
 
-                    b.Navigation("Pharmacist")
-                        .IsRequired();
+                    b.Navigation("Pharmacist");
                 });
 #pragma warning restore 612, 618
         }
