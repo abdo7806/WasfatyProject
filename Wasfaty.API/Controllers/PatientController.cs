@@ -3,13 +3,13 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Wasfaty.Application.DTOs.Patients;
-using Wasfaty.Application.Interfaces;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 using Wasfaty.Application.DTOs.Users;
 using Wasfaty.Application.DTOs.MedicalCenters;
 using Wasfaty.Application.DTOs.Doctors;
 using Wasfaty.Application.Constants;
 using System.Linq;
+using Wasfaty.Application.Interfaces.IServices;
 
 [Route("api/PatientController")]
 [ApiController]

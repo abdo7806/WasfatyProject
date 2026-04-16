@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using Wasfaty.Application.Constants;
 using Wasfaty.Application.DTOs.MedicalCenters;
 using Wasfaty.Application.DTOs.Pharmacies;
-using Wasfaty.Application.Interfaces;
+using Wasfaty.Application.Interfaces.IServices;
 
 [Route("api/[controller]")]
 [ApiController]

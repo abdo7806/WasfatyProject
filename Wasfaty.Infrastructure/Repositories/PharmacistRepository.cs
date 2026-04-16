@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Wasfaty.Application.DTOs.Doctors;
 using Wasfaty.Application.DTOs.Pharmacists;
+using Wasfaty.Application.Interfaces.IRepositories;
 
 public class PharmacistRepository : IPharmacistRepository
 {

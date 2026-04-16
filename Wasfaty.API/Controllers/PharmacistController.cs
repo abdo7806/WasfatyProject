@@ -7,7 +7,7 @@ using Wasfaty.Application.DTOs.MedicalCenters;
 using Wasfaty.Application.DTOs.Pharmacies;
 using Wasfaty.Application.DTOs.Pharmacists;
 using Wasfaty.Application.DTOs.Users;
-using Wasfaty.Application.Interfaces;
+using Wasfaty.Application.Interfaces.IServices;
 
 [Route("api/[controller]")]
 [ApiController]

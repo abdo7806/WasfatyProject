@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Wasfaty.Application.DTOs.Patients;
+using Wasfaty.Application.Interfaces.IRepositories;
 using Wasfaty.Infrastructure.Data;
 
 public class AuthRepository  : IAuthRepository

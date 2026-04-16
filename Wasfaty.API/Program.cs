@@ -5,11 +5,11 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
 using Wasfaty.Application.Constants;
-using Wasfaty.Application.Interfaces;
-using Wasfaty.Application.Interfaces.Repositories;
+using Wasfaty.Application.Interfaces.IRepositories;
+using Wasfaty.Application.Interfaces.IServices;
+using Wasfaty.Application.Services;
 using Wasfaty.Infrastructure.Data;
 using Wasfaty.Infrastructure.Repositories;
-using Wasfaty.Infrastructure.Repositories.Interfaces;
 using Wasfaty.Infrastructure.Seeders;
 using Wasfaty.Infrastructure.Services;
 using Wasfaty.Infrastructure.Services.EmailServices;
@@ -26,6 +26,10 @@ builder.Services.AddCors(options =>
                   .AllowAnyHeader(); // «·”„«Õ »√Ì —√” (headers)
         });
 });
+
+
+
+
 
 builder.Services.AddAuthorization(options =>
 {
@@ -68,8 +72,12 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidAudience = builder.Configuration["Jwt:Audience"],
             // «·„› «Õ «·”—Ì «·–Ì Ì” Œœ„ · ÊﬁÌ⁄ «· Êﬂ‰° Ì „  ÕÊÌ·Â ≈·Ï „’›Ê›… »«Ì 
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
+
+
         };
     });
+
+
 // ≈÷«›… DbContext «·Œ«’ »ﬂ „⁄ ≈⁄œ«œ «·« ’«·
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
@@ -131,65 +139,38 @@ builder.Services.Configure<SendGridSettings>(builder.Configuration.GetSection("S
 builder.Services.AddTransient<IEmailService, SendGridEmailService>();
 // ≈÷«›… Œœ„«  Swagger
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(options =>
+{
+    //  ⁄—Ì› Security Scheme
+    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Name = "Authorization",
+        Type = SecuritySchemeType.Http,
+        Scheme = "Bearer",
+        BearerFormat = "JWT",
+        In = ParameterLocation.Header,
+        Description = "Enter JWT Token like this: Bearer {your token}"
+    });
 
+    //  ÿ»ÌﬁÂ ⁄·Ï ﬂ· «·‹ APIs
+    options.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            Array.Empty<string>()
+        }
+    });
+});
 
 var app = builder.Build();
 
-//using (var scope = app.Services.CreateScope())
-//{
-//    var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-//    db.Database.Migrate();
-
-//    await ApplicationDbSeeder.SeedAsync(scope.ServiceProvider);
-
-//}
-
-//using (var scope = app.Services.CreateScope())
-//{
-//    try
-//    {
-//        var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-
-//        //  ÿ»Ìﬁ «·‹ Migrations
-//        await db.Database.MigrateAsync();
-
-//        //  ‘€Ì· «·‹ Seeder
-//        await ApplicationDbSeeder.SeedAsync(scope.ServiceProvider);
-
-//        Console.WriteLine("Database migration and seeding completed successfully.");
-//    }
-//    catch (Exception ex)
-//    {
-//        Console.WriteLine($"An error occurred while migrating/seeding the database: {ex.Message}");
-//        throw;
-//    }
-//}
-
-
-//using (var scope = app.Services.CreateScope())
-//{
-//    try
-//    {
-//        var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-
-//        // ??  Õﬁﬁ Â· ›ÌÂ Migrations ÃœÌœ… ›ﬁÿ
-//        if (db.Database.GetPendingMigrations().Any())
-//        {
-//            await db.Database.MigrateAsync();
-//        }
-
-//        // ?? ‘€· Seeder (Ì›÷·  Œ·ÌÂ –ﬂÌ)
-//        await ApplicationDbSeeder.SeedAsync(scope.ServiceProvider);
-
-//        Console.WriteLine("Database migration and seeding completed successfully.");
-//    }
-//    catch (Exception ex)
-//    {
-//        Console.WriteLine($"An error occurred while migrating/seeding the database: {ex.Message}");
-//        // ? ·«  ⁄„· throw Â‰«
-//    }
-//}
 
 using (var scope = app.Services.CreateScope())
 {

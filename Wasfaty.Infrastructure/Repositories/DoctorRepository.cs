@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Wasfaty.Application.DTOs.Doctors;
-using Wasfaty.Application.Interfaces.Repositories;
+using Wasfaty.Application.Interfaces.IRepositories;
 
 public class DoctorRepository : IDoctorRepository
 {

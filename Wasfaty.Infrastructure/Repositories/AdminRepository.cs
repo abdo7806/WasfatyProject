@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Wasfaty.Application.DTOs.AdminDto;
-using Wasfaty.Infrastructure.Repositories.Interfaces;
+using Wasfaty.Application.Interfaces.IRepositories;
 
 namespace Wasfaty.Infrastructure.Repositories
 {

@@ -3,12 +3,12 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Wasfaty.Application.DTOs; // تأكد من تعديل المسار إذا لزم الأمر
-using Wasfaty.Application.Interfaces;
 using Wasfaty.Application.DTOs.MedicalCenters;
 using Wasfaty.Application.DTOs.Patients;
 using Wasfaty.Application.DTOs.Users;
 using Wasfaty.Infrastructure.Services;
 using Wasfaty.Application.Constants;
+using Wasfaty.Application.Interfaces.IServices;
 
 [Route("api/[controller]")]
 [ApiController]

@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Wasfaty.Application.DTOs.AdminDto;
-using Wasfaty.Application.Interfaces;
+using Wasfaty.Application.Interfaces.IServices;
 
 namespace Wasfaty.API.Controllers
 {

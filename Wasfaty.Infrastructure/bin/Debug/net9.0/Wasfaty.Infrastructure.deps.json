@@ -1086,8 +1086,11 @@
       },
       "Wasfaty.Application/1.0.0": {
         "dependencies": {
+          "BCrypt.Net-Next": "4.0.3",
           "FluentValidation": "11.11.0",
+          "Microsoft.Extensions.Configuration.Abstractions": "9.0.4",
           "Microsoft.Extensions.DependencyInjection": "9.0.4",
+          "System.IdentityModel.Tokens.Jwt": "8.9.0",
           "Wasfaty.Domain": "1.0.0"
         },
         "runtime": {

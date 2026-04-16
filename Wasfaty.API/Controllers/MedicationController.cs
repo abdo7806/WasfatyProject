@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Wasfaty.Application.Constants;
 using Wasfaty.Application.DTOs.Medications;
 using Wasfaty.Application.DTOs.Pharmacies;
-using Wasfaty.Application.Interfaces;
+using Wasfaty.Application.Interfaces.IServices;
 
 [Route("api/[controller]")]
 [ApiController]

@@ -6,6 +6,7 @@ using System.Reflection.Metadata.Ecma335;
 using System.Text;
 using System.Threading.Tasks;
 using Wasfaty.Application.DTOs.Prescriptions;
+using Wasfaty.Application.Interfaces.IRepositories;
 
 public class PrescriptionRepository : IPrescriptionRepository
 {

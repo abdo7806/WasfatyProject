@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using Wasfaty.Application.DTOs.Auth;
 using Wasfaty.Application.DTOs.Users;
-using Wasfaty.Application.Interfaces;
+using Wasfaty.Application.Interfaces.IServices;
 
 
 [ApiController]

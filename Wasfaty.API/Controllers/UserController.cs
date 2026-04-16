@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Wasfaty.Application.Constants;
 using Wasfaty.Application.DTOs.Users;
-using Wasfaty.Application.Interfaces;
+using Wasfaty.Application.Interfaces.IServices;
 
 namespace Wasfaty.API.Controllers
 {

@@ -9,6 +9,7 @@ using Wasfaty.Application.DTOs.MedicalCenters;
 using Wasfaty.Application.DTOs.Patients;
 using Wasfaty.Application.DTOs.Prescriptions;
 using Wasfaty.Application.DTOs.Users;
+using Wasfaty.Application.Interfaces.IRepositories;
 
 
 namespace Wasfaty.Infrastructure.Repositories
