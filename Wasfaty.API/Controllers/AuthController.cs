@@ -8,7 +8,6 @@ using Wasfaty.Application.Interfaces.IServices;
 
 [ApiController]
 [Route("api/[controller]")]
-
 public class AuthController : ControllerBase
 {
     private readonly IAuthService _authService;
@@ -21,7 +20,6 @@ public class AuthController : ControllerBase
     [HttpPost("register")]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [AllowAnonymous]
-
     public async Task<ActionResult> Register([FromBody] RegisterUserDto request)
     {
         if (request == null || string.IsNullOrEmpty(request.FullName) || string.IsNullOrEmpty(request.Email)|| string.IsNullOrEmpty(request.Password) )
@@ -49,7 +47,7 @@ public class AuthController : ControllerBase
 
         if (token == null)
         {
-            return BadRequest("تاكد من كلمة المرور");
+            return Unauthorized("Invalid email or password");
         }
         return Ok(token);
     }
@@ -63,6 +61,8 @@ public class AuthController : ControllerBase
         // استخراج UserId من التوكن
         var userIdFromToken = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
+        var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
+
         // التحقق من أن UserId من التوكن يتطابق مع UserId المرسل
         if (userIdFromToken != model.UserId.ToString())
         {
@@ -72,8 +72,8 @@ public class AuthController : ControllerBase
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
 
-        var result = await _authService.ChangeUserPassword(model.UserId, model.CurrentPassword, model.NewPassword);
-
+        //var result = await _authService.ChangeUserPassword(model.UserId, model.CurrentPassword, model.NewPassword);
+        var result = await _authService.ChangeUserPassword(userId, model.CurrentPassword, model.NewPassword);
         if (!result)
             return BadRequest("Failed to change password.");
 

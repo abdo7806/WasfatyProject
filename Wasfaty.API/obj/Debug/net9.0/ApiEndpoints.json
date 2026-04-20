@@ -2609,7 +2609,7 @@
   },
   {
     "ContainingType": "Program\u002B\u003C\u003Ec__DisplayClass0_0",
-    "Method": "\u003C\u003CMain\u003E$\u003Eb__6",
+    "Method": "\u003C\u003CMain\u003E$\u003Eb__7",
     "RelativePath": "weatherforecast",
     "HttpMethod": "GET",
     "IsController": false,

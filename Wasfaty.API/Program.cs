@@ -29,7 +29,20 @@ builder.Services.AddCors(options =>
 
 
 
-
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowFrontend",
+        policy =>
+        {
+            policy.WithOrigins(
+                    "https://yourfrontend.com",
+                    "https://admin.yourfrontend.com"
+                  )
+                  .AllowAnyMethod()
+                  .AllowAnyHeader()
+                  .AllowCredentials(); // ≈–«  ” Œœ„ JWT ›Ì «·ﬂÊﬂÌ“
+        });
+});
 
 builder.Services.AddAuthorization(options =>
 {
@@ -55,6 +68,9 @@ builder.Services.AddOpenApi();
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
+        
+        options.RequireHttpsMetadata = true;
+
         // ≈⁄œ«œ „⁄·„«  «· Õﬁﬁ „‰ ’Õ… «· Êﬂ‰
         options.TokenValidationParameters = new TokenValidationParameters
         {
@@ -71,9 +87,9 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             // «·Ã„ÂÊ— «·„” Âœ› «·–Ì Ì” Œœ„ «· Êﬂ‰° Ì „ «·Õ’Ê· ⁄·ÌÂ „‰ „·› «·≈⁄œ«œ« 
             ValidAudience = builder.Configuration["Jwt:Audience"],
             // «·„› «Õ «·”—Ì «·–Ì Ì” Œœ„ · ÊﬁÌ⁄ «· Êﬂ‰° Ì „  ÕÊÌ·Â ≈·Ï „’›Ê›… »«Ì 
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"])),
 
-
+            ClockSkew = TimeSpan.Zero
         };
     });
 
@@ -132,9 +148,6 @@ builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("Emai
 builder.Services.AddTransient<IEmailService, EmailService>();
 
 
-/*builder.Services.Configure<SendGridSettings>(builder.Configuration.GetSection("SendGrid"));
-builder.Services.AddTransient<ISendGridEmailService, SendGridEmailService>();
-*/
 builder.Services.Configure<SendGridSettings>(builder.Configuration.GetSection("SendGrid"));
 builder.Services.AddTransient<IEmailService, SendGridEmailService>();
 // ≈÷«›… Œœ„«  Swagger
@@ -196,7 +209,8 @@ using (var scope = app.Services.CreateScope())
 //  „ﬂÌ‰ Swagger
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger();
+    app.UseSwagger();  //  √ﬂœ „‰ √‰ Swagger Ì⁄„· »‘ﬂ· ’ÕÌÕ
+
     app.UseSwaggerUI(c =>
     {
         c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1");
@@ -204,17 +218,15 @@ if (app.Environment.IsDevelopment())
     });
     app.MapOpenApi(); //  √ﬂœ „‰ √‰ﬂ  ﬁÊ„ » ‘€Ì· MapOpenApi Â‰«
 
+
 }
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+
+
+if (!app.Environment.IsDevelopment())
 {
-    app.UseSwagger();  //  √ﬂœ „‰ √‰ Swagger Ì⁄„· »‘ﬂ· ’ÕÌÕ
-
-    app.MapOpenApi();
+    app.UseHsts();
 }
-
-
 
 app.UseHttpsRedirection();
 
