@@ -78,7 +78,7 @@ namespace Wasfaty.Application.Services
             user.RoleId = (int)userDto.Role;
 
           
-            var createdUser = await _userRepository.UpdateAsync(user); ;
+            var createdUser = await _userRepository.UpdateAsync(user); 
 
             return new UserDto
             {

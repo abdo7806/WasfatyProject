@@ -11,29 +11,34 @@ using Wasfaty.Application.Interfaces.IServices;
 
 [Route("api/[controller]")]
 [ApiController]
-//[Authorize(Roles = Roles.Admin)]
+[Authorize]
 public class PharmacistController : ControllerBase
 {
     private readonly IPharmacistService _pharmacistService;
     private readonly IUserService _userService;
     private readonly IPharmacyService _pharmacyService;
+    private readonly IAuthorizationService _authorizationService;
+
 
     public PharmacistController(IPharmacistService pharmacistService,
         IUserService userService,
-        IPharmacyService pharmacyService)
+        IPharmacyService pharmacyService,
+        IAuthorizationService authorizationService)
     {
         _pharmacistService = pharmacistService;
         _userService = userService;
         _pharmacyService = pharmacyService;
+        _authorizationService = authorizationService;
     }
 
+    [Authorize(Policy = "AdminRole")]
     [HttpGet("All", Name = "GetAllPharmacist")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<List<PharmacistDto>>> GetAllPharmacist()
     {
         var pharmacists = await _pharmacistService.GetAllAsync();
-        if (pharmacists == null || !pharmacists.Any() || pharmacists.Count() == 0)
+        if (pharmacists == null || !pharmacists.Any())
         {
             return NotFound("No pharmacists found.");
         }
@@ -52,15 +57,22 @@ public class PharmacistController : ControllerBase
         {
             return BadRequest("Invalid ID.");
         }
-
         var pharmacist = await _pharmacistService.GetByIdAsync(id);
+
         if (pharmacist == null)
-        {
-            return NotFound($"pharmacist with ID {id} not found.");
-        }
+            return NotFound();
+
+        var auth = await _authorizationService.AuthorizeAsync(
+            User, pharmacist, "CanAccessPharmacist");
+
+        if (!auth.Succeeded)
+            return Forbid();
+
+
         return Ok(pharmacist);
     }
 
+    [Authorize(Policy = "AdminRole")]
     [HttpPost("CreatePharmacist")]
     [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -74,7 +86,7 @@ public class PharmacistController : ControllerBase
 
         var pharmacists = await _pharmacistService.GetAllAsync();
 
-        if (pharmacists.Where(d => d.UserId == pharmacistDto.UserId).Count() > 0)
+        if (pharmacists.Any(d => d.UserId == pharmacistDto.UserId))
         {
             return BadRequest("هاذا المستخدم صيدلي بالفعل");
 
@@ -92,9 +104,9 @@ public class PharmacistController : ControllerBase
 
         }
 
-        PharmacyDto? PharmacyDto = await _pharmacyService.GetByIdAsync(pharmacistDto.PharmacyId);
+        PharmacyDto? pharmacy = await _pharmacyService.GetByIdAsync(pharmacistDto.PharmacyId);
 
-        if (PharmacyDto == null)
+        if (pharmacy == null)
         {
             return BadRequest("Invalid Pharmacy data.");
 
@@ -110,6 +122,7 @@ public class PharmacistController : ControllerBase
     }
 
 
+    [Authorize(Policy = "AdminOrPharmacistRole")]
     [HttpPut("{id}", Name = "UpdatePharmacist")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -122,18 +135,24 @@ public class PharmacistController : ControllerBase
             return BadRequest("Invalid ID.");
         }
 
-       PharmacyDto? PharmacyDto = await _pharmacyService.GetByIdAsync(pharmacistDto.PharmacyId);
 
-        if (PharmacyDto == null)
+        var existingPharmacist = await _pharmacistService.GetByIdAsync(id);
+
+        if (existingPharmacist == null)
+            return NotFound();
+
+        var auth = await _authorizationService.AuthorizeAsync(
+            User, existingPharmacist, "CanEditPharmacist");
+
+        if (!auth.Succeeded)
+            return Forbid();
+
+        var pharmacy = await _pharmacyService.GetByIdAsync(pharmacistDto.PharmacyId);
+
+        if (pharmacy == null)
         {
             return BadRequest("Invalid Pharmacy data.");
 
-        }
-
-        var existingPharmacist = await _pharmacistService.GetByIdAsync(id);
-        if (existingPharmacist == null)
-        {
-            return NotFound($"Pharmacy with ID {id} not found.");
         }
 
         var updatedPharmacist = await _pharmacistService.UpdateAsync(id, pharmacistDto);
@@ -143,6 +162,7 @@ public class PharmacistController : ControllerBase
  
     }
 
+    [Authorize(Policy = "AdminRole")]
     [HttpDelete("{id}", Name = "DeletePharmacist")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -160,31 +180,32 @@ public class PharmacistController : ControllerBase
             var existingPharmacist = await _pharmacistService.GetByIdAsync(id);
             if (existingPharmacist == null)
             {
-                return NotFound($"Pharmacist center with ID {id} not found.");
+                return Ok($"Pharmacist ID {id} has been deleted.");
             }
 
             if (await _pharmacistService.DeleteAsync(id))
                 return Ok($"Pharmacist center ID {id} has been deleted.");
             else
-                return NotFound($"Pharmacist with ID {id} not found. no rows deleted!");
-
+                return NotFound($"Pharmacist with ID {id} not found.");
 
         }
         catch (KeyNotFoundException)
         {
-            return NotFound($"Pharmacist with ID {id} not found. no rows deleted!");
+            return Ok($"Pharmacist ID {id} has been deleted.");
         }
 
     }
 
-
+    [Authorize(Policy = "AdminOrPharmacistRole")]
     [HttpGet("GetByPharmacyIdAsync/{PharmacyId}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<List<PharmacistDto>>> GetByPharmacyIdAsync(int PharmacyId)
     {
         var pharmacists = await _pharmacistService.GetByPharmacyIdAsync(PharmacyId);
-        if (pharmacists == null || !pharmacists.Any() || pharmacists.Count() == 0)
+
+
+        if (pharmacists == null || !pharmacists.Any())
         {
             return NotFound("No pharmacists found.");
         }
@@ -192,7 +213,7 @@ public class PharmacistController : ControllerBase
     }
 
 
-
+    [Authorize(Policy = "AdminOrPharmacistRole")]
     [HttpGet("GetPharmacistByUserId/{userId}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -206,23 +227,36 @@ public class PharmacistController : ControllerBase
             return BadRequest("Invalid userId.");
         }
 
-        var pharmacist = await _pharmacistService.GetPharmacyByUserIdAsync(userId);
+        var pharmacist = await _pharmacistService.GetPharmacistByUserIdAsync(userId);
+
         if (pharmacist == null)
-        {
-            return NotFound($"pharmacist with userId {userId} not found.");
-        }
+            return NotFound();
+
+        var auth = await _authorizationService.AuthorizeAsync(
+            User, pharmacist, "CanAccessPharmacist");
+
+        if (!auth.Succeeded)
+            return Forbid();
+
         return Ok(pharmacist);
     }
 
 
-
+    [Authorize(Policy = "AdminOrPharmacistRole")]
     [HttpGet("stats/{pharmacistId}")]
     public async Task<IActionResult> GetDashboardStats(int pharmacistId)
     {
         var pharmacist = await _pharmacistService.GetByIdAsync(pharmacistId);
 
         if (pharmacist == null)
-            return Unauthorized();
+            return NotFound();
+
+        var auth = await _authorizationService.AuthorizeAsync(
+            User, pharmacist, "CanAccessPharmacist");
+
+        if (!auth.Succeeded)
+            return Forbid();
+
 
         var stats = await _pharmacistService.GetPharmacistDataAsync(pharmacistId);
         return Ok(stats);

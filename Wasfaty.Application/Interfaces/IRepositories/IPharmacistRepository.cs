@@ -16,7 +16,7 @@ public interface IPharmacistRepository
     Task<bool> DeleteAsync(int id);
 
 
-    Task<Pharmacist> GetPharmacyByUserIdAsync(int userId);
+    Task<Pharmacist> GetPharmacistByUserIdAsync(int userId);
 
     Task<PharmacistDashboardStatsDto> GetPharmacistDataAsync(int PharmacistId);//صفحة لوحة القيادة للصيدلي
 

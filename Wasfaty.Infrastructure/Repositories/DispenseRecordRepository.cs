@@ -71,6 +71,37 @@ public class DispenseRecordRepository : IDispenseRecordRepository
 
     }
 
+
+    //public async Task<DispenseRecord> AddAsync(DispenseRecord dispenseRecord, Prescription prescription)
+    //{
+    //    using (var transaction = await _context.Database.BeginTransactionAsync())
+    //    {
+    //        try
+    //        {
+    //            // 🔥 ربط العلاقة من الطرفين
+    //            dispenseRecord.Prescription = prescription;
+    //            prescription.DispenseRecord = dispenseRecord;
+
+    //            // إضافة
+    //            await _context.DispenseRecords.AddAsync(dispenseRecord);
+
+    //            // تحديث الحالة
+    //            prescription.IsDispensed = true;
+
+    //            await _context.SaveChangesAsync();
+    //            await transaction.CommitAsync();
+
+    //            return dispenseRecord;
+    //        }
+    //        catch (Exception ex)
+    //        {
+    //            await transaction.RollbackAsync();
+    //            Console.WriteLine(ex.Message);
+    //            return null;
+    //        }
+    //    }
+    //}
+
     public async Task<DispenseRecord> UpdateAsync(DispenseRecord dispenseRecord)
     {
         _context.Entry(dispenseRecord).State = EntityState.Modified;

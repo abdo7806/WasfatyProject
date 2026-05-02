@@ -26,6 +26,7 @@ public class MedicalCenterController : ControllerBase
     }
 
     // GET: api/medicalcenter
+    [AllowAnonymous]
     [HttpGet("All", Name = "GetAllMedicalCenters")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -33,7 +34,7 @@ public class MedicalCenterController : ControllerBase
     {
         var medicalCenters = await _medicalCenterService.GetAllAsync();
 
-        if (medicalCenters == null || !medicalCenters.Any() || medicalCenters.Count() == 0)
+        if (medicalCenters == null || !medicalCenters.Any())
         {
             return NotFound("No medical centers found.");
         }
@@ -101,8 +102,8 @@ public class MedicalCenterController : ControllerBase
             return NotFound($"Medical center with ID {id} not found.");
         }
 
-        await _medicalCenterService.UpdateAsync(id, medicalCenterDto);
-        return Ok(medicalCenterDto);
+        var updated = await _medicalCenterService.UpdateAsync(id, medicalCenterDto);
+        return Ok(updated);
     }
 
     // DELETE: api/medicalcenter/{id}
@@ -128,7 +129,7 @@ public class MedicalCenterController : ControllerBase
             if (await _medicalCenterService.DeleteAsync(id))
                 return Ok($"Medical center ID {id} has been deleted.");
             else
-                return NotFound($"Medical with ID {id} not found. no rows deleted!");
+                return NotFound($"Medical center  with ID {id} not found. no rows deleted!");
      
 
         }

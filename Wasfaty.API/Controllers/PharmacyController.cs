@@ -9,7 +9,7 @@ using Wasfaty.Application.Interfaces.IServices;
 
 [Route("api/[controller]")]
 [ApiController]
-//[Authorize(Roles = Roles.Admin)]
+[Authorize(Roles = Roles.Admin)]
 public class PharmacyController : ControllerBase
 {
     private readonly IPharmacyService _pharmacyService;
@@ -20,15 +20,16 @@ public class PharmacyController : ControllerBase
     }
 
     // GET: api/pharmacy
+    [AllowAnonymous]
     [HttpGet("All", Name = "GetAllPharmacy")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<List<PharmacyDto>>> GetAllPharmacy()
     {
         var pharmacies = await _pharmacyService.GetAllAsync();
-        if (pharmacies == null || !pharmacies.Any() || pharmacies.Count() == 0)
+        if (pharmacies == null || !pharmacies.Any())
         {
-            return NotFound("No pharmacies centers found.");
+            return NotFound("No pharmacies found.");
         }
 
         return Ok(pharmacies);
@@ -49,7 +50,7 @@ public class PharmacyController : ControllerBase
         var pharmacy = await _pharmacyService.GetByIdAsync(id);
         if (pharmacy == null)
         {
-            return NotFound($"Pharmacy center with ID {id} not found.");
+            return NotFound($"Pharmacy with ID {id} not found.");
         }
         return Ok(pharmacy);
     }
@@ -62,7 +63,7 @@ public class PharmacyController : ControllerBase
     {
         if (pharmacyDto == null)
         {
-            return BadRequest("Invalid pharmacy center data.");
+            return BadRequest("Invalid pharmacy data.");
         }
 
 
@@ -87,10 +88,14 @@ public class PharmacyController : ControllerBase
         {
             return BadRequest("Invalid ID.");
         }
+        var existing = await _pharmacyService.GetByIdAsync(id);
+
+        if (existing == null)
+            return NotFound();
         var updatedPharmacy = await _pharmacyService.UpdateAsync(id, pharmacyDto);
         if (updatedPharmacy == null)
         {
-            return NotFound($"Pharmacy center with ID {id} not found.");
+            return NotFound($"Pharmacy with ID {id} not found.");
         }
         return Ok(updatedPharmacy);
     }
@@ -112,11 +117,11 @@ public class PharmacyController : ControllerBase
             var existingPharmacy = await _pharmacyService.GetByIdAsync(id);
             if (existingPharmacy == null)
             {
-                return NotFound($"Pharmacy center with ID {id} not found.");
+                return NotFound($"Pharmacy with ID {id} not found.");
             }
 
             if (await _pharmacyService.DeleteAsync(id))
-                return Ok($"Pharmacy center ID {id} has been deleted.");
+                return Ok($"Pharmacy ID {id} has been deleted.");
             else
                 return NotFound($"Pharmacy with ID {id} not found. no rows deleted!");
 

@@ -1262,6 +1262,26 @@
   },
   {
     "ContainingType": "PatientController",
+    "Method": "GetMyProfile",
+    "RelativePath": "api/PatientController/MyProfile",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": [
+      {
+        "Type": "Wasfaty.Application.DTOs.Patients.PatientDto",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "PatientController",
     "Method": "SearchPatients",
     "RelativePath": "api/PatientController/SearchPatients/{term}",
     "HttpMethod": "GET",
@@ -2005,76 +2025,6 @@
   },
   {
     "ContainingType": "PrescriptionController",
-    "Method": "GetByDoctorId",
-    "RelativePath": "api/Prescription/GetByDoctorId/{doctorId}",
-    "HttpMethod": "GET",
-    "IsController": true,
-    "Order": 0,
-    "Parameters": [
-      {
-        "Name": "doctorId",
-        "Type": "System.Int32",
-        "IsRequired": true
-      }
-    ],
-    "ReturnTypes": [
-      {
-        "Type": "System.Collections.Generic.List\u00601[[Wasfaty.Application.DTOs.Prescriptions.PrescriptionDto, Wasfaty.Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
-        "MediaTypes": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
-        "StatusCode": 200
-      },
-      {
-        "Type": "Microsoft.AspNetCore.Mvc.ProblemDetails",
-        "MediaTypes": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
-        "StatusCode": 404
-      }
-    ]
-  },
-  {
-    "ContainingType": "PrescriptionController",
-    "Method": "GetByPatientId",
-    "RelativePath": "api/Prescription/GetByPatientId/{PatientId}",
-    "HttpMethod": "GET",
-    "IsController": true,
-    "Order": 0,
-    "Parameters": [
-      {
-        "Name": "PatientId",
-        "Type": "System.Int32",
-        "IsRequired": true
-      }
-    ],
-    "ReturnTypes": [
-      {
-        "Type": "System.Collections.Generic.List\u00601[[Wasfaty.Application.DTOs.Prescriptions.PrescriptionDto, Wasfaty.Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
-        "MediaTypes": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
-        "StatusCode": 200
-      },
-      {
-        "Type": "Microsoft.AspNetCore.Mvc.ProblemDetails",
-        "MediaTypes": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
-        "StatusCode": 404
-      }
-    ]
-  },
-  {
-    "ContainingType": "PrescriptionController",
     "Method": "MarkAsDispensed",
     "RelativePath": "api/Prescription/MarkAsDispensed/{id}",
     "HttpMethod": "PUT",
@@ -2114,6 +2064,26 @@
           "text/json"
         ],
         "StatusCode": 400
+      }
+    ]
+  },
+  {
+    "ContainingType": "PrescriptionController",
+    "Method": "GetMyPrescriptions",
+    "RelativePath": "api/Prescription/MyPrescriptions",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": [
+      {
+        "Type": "System.Collections.Generic.List\u00601[[Wasfaty.Application.DTOs.Prescriptions.PrescriptionDto, Wasfaty.Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
       }
     ]
   },
@@ -2373,8 +2343,13 @@
     "Order": 0,
     "Parameters": [
       {
-        "Name": "id",
+        "Name": "prescriptionId",
         "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "id",
+        "Type": "",
         "IsRequired": true
       }
     ],
@@ -2609,7 +2584,7 @@
   },
   {
     "ContainingType": "Program\u002B\u003C\u003Ec__DisplayClass0_0",
-    "Method": "\u003C\u003CMain\u003E$\u003Eb__7",
+    "Method": "\u003C\u003CMain\u003E$\u003Eb__8",
     "RelativePath": "weatherforecast",
     "HttpMethod": "GET",
     "IsController": false,

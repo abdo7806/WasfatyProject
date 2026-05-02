@@ -87,12 +87,17 @@ public class ApplicationDbContext : DbContext
 
 
         // جدول DispenseRecords
-        modelBuilder.Entity<DispenseRecord>()
-            .HasOne(dr => dr.Prescription)
-            .WithOne(p => p.DispenseRecord)
-            .HasForeignKey<DispenseRecord>(dr => dr.PrescriptionId)
-    .OnDelete(DeleteBehavior.NoAction);
+            modelBuilder.Entity<DispenseRecord>()
+                .HasOne(dr => dr.Prescription)
+                .WithOne(p => p.DispenseRecord)
+                .HasForeignKey<DispenseRecord>(dr => dr.PrescriptionId)
+        .OnDelete(DeleteBehavior.NoAction);
 
+        //    modelBuilder.Entity<DispenseRecord>()
+        //.HasOne(dr => dr.Prescription)
+        //.WithMany(p => p.DispenseRecords)
+        //.HasForeignKey(dr => dr.PrescriptionId)
+        //.OnDelete(DeleteBehavior.NoAction);
 
         modelBuilder.Entity<DispenseRecord>()
             .HasOne(dr => dr.Pharmacist)
@@ -111,10 +116,10 @@ public class ApplicationDbContext : DbContext
             .HasForeignKey(ph => ph.PharmacyId);
 
 
-        foreach (var relationship in modelBuilder.Model.GetEntityTypes()
-         .SelectMany(e => e.GetForeignKeys()))
-        {
-            relationship.DeleteBehavior = DeleteBehavior.NoAction;
-        }
+        //foreach (var relationship in modelBuilder.Model.GetEntityTypes()
+        // .SelectMany(e => e.GetForeignKeys()))
+        //{
+        //    relationship.DeleteBehavior = DeleteBehavior.NoAction;
+        //}
     }
 }

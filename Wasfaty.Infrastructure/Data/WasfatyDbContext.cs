@@ -64,10 +64,10 @@ public partial class WasfatyDbContext : DbContext
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK__DispenseR__Pharm__5EBF139D");
 
-            entity.HasOne(d => d.Prescription).WithOne(p => p.DispenseRecord)
-                .HasForeignKey<DispenseRecord>(d => d.PrescriptionId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__DispenseR__Presc__5CD6CB2B");
+            //entity.HasOne(d => d.Prescription).WithOne(p => p.DispenseRecord)
+            //    .HasForeignKey<DispenseRecord>(d => d.PrescriptionId)
+            //    .OnDelete(DeleteBehavior.ClientSetNull)
+            //    .HasConstraintName("FK__DispenseR__Presc__5CD6CB2B");
         });
 
         modelBuilder.Entity<Doctor>(entity =>

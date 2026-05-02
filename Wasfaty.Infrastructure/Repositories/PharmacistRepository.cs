@@ -112,7 +112,7 @@ public class PharmacistRepository : IPharmacistRepository
              .ToListAsync();
     }
 
-    public async Task<Pharmacist> GetPharmacyByUserIdAsync(int userId)
+    public async Task<Pharmacist> GetPharmacistByUserIdAsync(int userId)
     {
 
         return await _context.Pharmacists

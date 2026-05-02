@@ -181,9 +181,9 @@ public class PharmacistService : IPharmacistService
             }).ToList();
     }
 
-    public async Task<PharmacistDto> GetPharmacyByUserIdAsync(int userId)
+    public async Task<PharmacistDto> GetPharmacistByUserIdAsync(int userId)
     {
-        var pharmacist = await _pharmacistRepository.GetPharmacyByUserIdAsync(userId);
+        var pharmacist = await _pharmacistRepository.GetPharmacistByUserIdAsync(userId);
         if (pharmacist == null) return null;
 
         return new PharmacistDto

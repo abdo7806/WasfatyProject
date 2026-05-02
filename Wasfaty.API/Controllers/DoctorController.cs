@@ -13,28 +13,31 @@ using Wasfaty.Application.Interfaces.IServices;
 
 [Route("api/[controller]")]
 [ApiController]
-//[Authorize(Roles = Roles.Admin)]
+[Authorize]
 public class DoctorController : ControllerBase
 {
     private readonly IDoctorService _doctorService;
     private readonly IUserService _userService;
     private readonly IMedicalCenterService _medicalCenterService;
+    private readonly IAuthorizationService _authorizationService;
 
-    public DoctorController(IDoctorService doctorService, IUserService userService, IMedicalCenterService medicalCenterService)
+    public DoctorController(IDoctorService doctorService, IUserService userService, IMedicalCenterService medicalCenterService, IAuthorizationService authorizationService)
     {
         _doctorService = doctorService;
         _userService = userService;
         _medicalCenterService = medicalCenterService;
+        _authorizationService = authorizationService;
     }
 
     // GET: api/doctor
+    [Authorize(Policy = "AdminRole")]
     [HttpGet("All", Name = "GetAllDoctors")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<IEnumerable<DoctorDto>>> GetAllDoctors()
     {
         var doctors = await _doctorService.GetAllDoctorsAsync();
-        if (doctors == null || !doctors.Any() || doctors.Count() ==0)
+        if (doctors == null || !doctors.Any())
         {
             return NotFound("No doctors found.");
         }
@@ -54,15 +57,23 @@ public class DoctorController : ControllerBase
         }
 
         var doctor = await _doctorService.GetDoctorByIdAsync(id);
+
         if (doctor == null)
-        {
-            return NotFound($"Doctor with ID {id} not found.");
-        }
+            return NotFound();
+
+        var auth = await _authorizationService.AuthorizeAsync(
+            User, doctor, "CanAccessDoctor");
+
+        if (!auth.Succeeded)
+            return Forbid();
+
+
         return Ok(doctor);
     }
 
     // POST: api/doctor
     [HttpPost("CreateDoctor")]
+    [Authorize(Policy = "AdminRole")]
     [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult> CreateDoctor([FromBody] CreateDoctorDto doctorDto)
@@ -74,7 +85,7 @@ public class DoctorController : ControllerBase
 
         var doctors = await _doctorService.GetAllDoctorsAsync();
 
-        if (doctors.Where(d => d.UserId == doctorDto.UserId).Count() > 0)
+        if (doctors.Any(d => d.UserId == doctorDto.UserId))
         {
             return BadRequest("هاذا المستخدم طبيب بالفعل");
 
@@ -110,7 +121,9 @@ public class DoctorController : ControllerBase
         return CreatedAtRoute("GetDoctorById", new { id = doctor.Id }, doctor);
     }
 
+
     // PUT: api/doctor/{id}
+    [Authorize(Policy = "AdminOrDoctorRole")]
     [HttpPut("{id}", Name = "UpdateDoctor")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -122,6 +135,19 @@ public class DoctorController : ControllerBase
             return BadRequest("Invalid ID.");
         }
 
+        var existingDoctor = await _doctorService.GetDoctorByIdAsync(id);
+
+        if (existingDoctor == null)
+            return NotFound();
+
+        var auth = await _authorizationService.AuthorizeAsync(
+            User, existingDoctor, "CanEditDoctor");
+
+        if (!auth.Succeeded)
+            return Forbid();
+
+
+
         MedicalCenterDto? medicalCenterDto = await _medicalCenterService.GetByIdAsync(doctorDto.MedicalCenterId);
 
         if (medicalCenterDto == null)
@@ -130,17 +156,12 @@ public class DoctorController : ControllerBase
 
         }
 
-        var existingDoctor = await _doctorService.GetDoctorByIdAsync(id);
-        if (existingDoctor == null)
-        {
-            return NotFound($"Doctor with ID {id} not found.");
-        }
-
-        await _doctorService.UpdateDoctorAsync(id, doctorDto);
-        return Ok(existingDoctor);
+        var updatedDoctor = await _doctorService.UpdateDoctorAsync(id, doctorDto);
+        return Ok(updatedDoctor);
     }
 
     // DELETE: api/doctor/{id}
+    [Authorize(Policy = "AdminRole")]
     [HttpDelete("{id}", Name = "DeleteDoctor")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -154,10 +175,10 @@ public class DoctorController : ControllerBase
                 return BadRequest("Invalid ID.");
             }
 
-            var existingMedicalCenter = await _doctorService.GetDoctorByIdAsync(id);
-            if (existingMedicalCenter == null)
+            var existingDoctor = await _doctorService.GetDoctorByIdAsync(id);
+            if (existingDoctor == null)
             {
-                return NotFound($"Medical center with ID {id} not found.");
+                return NotFound($"Doctor center with ID {id} not found.");
             }
 
             if (await _doctorService.DeleteDoctorAsync(id))
@@ -176,6 +197,7 @@ public class DoctorController : ControllerBase
     }
 
     // GET: api/doctor/{id}
+    [Authorize(Policy = "AdminOrDoctorRole")]
     [HttpGet("GetDoctorByUserId/{UserId}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -188,18 +210,36 @@ public class DoctorController : ControllerBase
         }
 
         var doctor = await _doctorService.GetDoctorByUserIdAsync(UserId);
+
         if (doctor == null)
-        {
-            return NotFound($"Doctor with UserId {UserId} not found.");
-        }
+            return NotFound();
+
+        var auth = await _authorizationService.AuthorizeAsync(
+            User, doctor, "CanAccessDoctor");
+
+        if (!auth.Succeeded)
+            return Forbid();
+
         return Ok(doctor);
     }
 
     [HttpGet("dashboard/{doctorId}")]
+    [Authorize]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<AdminDashboardDto>> GetDashboard(int doctorId)
     {
+        var doctor = await _doctorService.GetDoctorByIdAsync(doctorId);
+
+        if (doctor == null)
+            return NotFound();
+
+        var auth = await _authorizationService.AuthorizeAsync(
+            User, doctor, "CanAccessDoctor");
+
+        if (!auth.Succeeded)
+            return Forbid();
+
 
         var dashboardData = await _doctorService.GetDashboardAsync(doctorId);
         if (dashboardData == null)

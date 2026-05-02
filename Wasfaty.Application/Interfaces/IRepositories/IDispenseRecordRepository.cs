@@ -10,7 +10,7 @@ public interface IDispenseRecordRepository
 {
     Task<DispenseRecord?> GetByIdAsync(int id);
     Task<List<DispenseRecord>> GetAllAsync();
-    Task<DispenseRecord> AddAsync(DispenseRecord dispenseRecord,Prescription prescription);
+    Task<DispenseRecord> AddAsync(DispenseRecord dispenseRecord, Prescription prescription);
     Task<DispenseRecord> UpdateAsync(DispenseRecord dispenseRecord);
     Task<bool> DeleteAsync(int id);
 

@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using Wasfaty.Application.DTOs.Users;
 
 namespace Wasfaty.Application.DTOs.Patients
 {
@@ -9,6 +10,13 @@ namespace Wasfaty.Application.DTOs.Patients
         // [Required]
         //[MaxLength(50)]
         //     public string MedicalRecordNumber { get; set; } = string.Empty;
+
+        [Required]
+        public string FullName { get; set; }
+
+        [Required]
+        [EmailAddress]
+        public string Email { get; set; }
 
         public DateOnly? DateOfBirth { get; set; }
 

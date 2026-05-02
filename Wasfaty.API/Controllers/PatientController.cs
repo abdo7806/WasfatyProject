@@ -10,26 +10,37 @@ using Wasfaty.Application.DTOs.Doctors;
 using Wasfaty.Application.Constants;
 using System.Linq;
 using Wasfaty.Application.Interfaces.IServices;
+using System.Security.Claims;
 
 [Route("api/PatientController")]
 [ApiController]
 
-//[Authorize]
+[Authorize]
 
 public class PatientController : ControllerBase
 {
     private readonly IPatientService _patientService;
     private readonly IUserService _userService;
+    private readonly IAuthorizationService _authorizationService;
 
-    public PatientController(IPatientService patientService, IUserService userService)
+    public PatientController(IPatientService patientService, IUserService userService, IAuthorizationService authorizationService)
     {
         _patientService = patientService;
         _userService = userService;
+        _authorizationService = authorizationService;
     }
 
-  // [Authorize(Roles = Roles.Admin + "," + Roles.Doctor)] // استثناء
+    private int GetUserId()
+    {
+        var claim = User.FindFirst(ClaimTypes.NameIdentifier);
 
+        if (claim == null)
+            throw new UnauthorizedAccessException();
+
+        return int.Parse(claim.Value);
+    }
     // GET: api/patient
+    [Authorize(Policy = "AdminOrDoctorRole")]
     [HttpGet("All", Name = "GetAllPatients")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -37,7 +48,7 @@ public class PatientController : ControllerBase
     {
         var patients = await _patientService.GetAllAsync();
 
-        if (patients.Count() == 0)
+        if (!patients.Any())
         {
             return NotFound("No Patient Found!");
         }
@@ -47,7 +58,6 @@ public class PatientController : ControllerBase
         return Ok(patients);
     }
 
-   // [Authorize(Roles = Roles.Admin + "," + Roles.Doctor)] // استثناء
     // GET: api/patient/{id}
     [HttpGet("{id}", Name = "GetPatientById")]
     [ProducesResponseType(StatusCodes.Status200OK)]
@@ -65,14 +75,19 @@ public class PatientController : ControllerBase
         {
             return NotFound($"Patient with ID {id} not found.");
         }
+
+        var auth = await _authorizationService.AuthorizeAsync(
+       User, patient, "CanAccessPatient");
+
+
+        if (!auth.Succeeded)
+            return Forbid();
+
         return Ok(patient);
     }
 
 
- //   [Authorize(Roles = Roles.Admin)]
-
-    // POST: api/patient
-    //   [Authorize(Roles = "Admin")] // فقط المسؤولين يمكنهم إنشاء مرضى
+    [Authorize(Policy = "AdminOrDoctorRole")]
     [HttpPost(Name = "CreatePatient")]
     [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -83,27 +98,6 @@ public class PatientController : ControllerBase
             return BadRequest("Invalid patient data.");
         }
 
-
-        var p = await _patientService.GetAllAsync();
-
-        if (p.Where(d => d.UserId == patientDto.UserId).Count() > 0)
-        {
-            return BadRequest("هاذا المستخدم مريض بالفعل");
-
-        }
-
-        UserDto user = await _userService.GetUserByIdAsync(patientDto.UserId);
-        if (user == null)
-        {
-            return BadRequest("Invalid User data.");
-        }
-
-        if(user.Role != UserRoleEnum.Patient)
-        {
-            return BadRequest("لازم تكون صلاحيات المستخدم مريض");
-
-        }
-
         var patient = await _patientService.CreateAsync(patientDto);
         if(patient == null)
         {
@@ -112,18 +106,28 @@ public class PatientController : ControllerBase
         return CreatedAtRoute("GetPatientById", new { id = patient.Id }, patient);
     }
 
-    [Authorize(Roles = Roles.Admin + "," + Roles.Patient)] // استثناء
     // PUT: api/patient/{id}
+    [Authorize]
     [HttpPut("{id}", Name = "UpdatePatient")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-   // [Authorize(Roles = "Admin")] // فقط المسؤولين يمكنهم تحديث المرضى
     public async Task<ActionResult<PatientDto>> UpdatePatient(int id, UpdatePatientDto patientDto)
     {
         if (id < 1)
         {
             return BadRequest("Invalid ID.");
         }
+
+        var existingPatient = await _patientService.GetByIdAsync(id);
+
+        if (existingPatient == null)
+            return NotFound();
+
+        var auth = await _authorizationService.AuthorizeAsync(
+            User, existingPatient, "CanEditPatient");
+
+        if (!auth.Succeeded)
+            return Forbid();
 
         PatientDto patient = await _patientService.UpdateAsync(id, patientDto);
         if (patient == null)
@@ -133,14 +137,12 @@ public class PatientController : ControllerBase
         return Ok(patient);
     }
 
-    [Authorize(Roles = Roles.Admin)]
-
     // DELETE: api/patient/{id}
+    [Authorize(Roles = "AdminRole")]
     [HttpDelete("{id}", Name = "DeletePatient")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-   // [Authorize(Roles = "Admin")] // فقط المسؤولين يمكنهم حذف المرضى
     public async Task<ActionResult> DeletePatient(int id)
     {
 
@@ -150,6 +152,14 @@ public class PatientController : ControllerBase
             {
                 return BadRequest($"Not accepted ID {id}");
             }
+
+            var patient = await _patientService.GetByIdAsync(id);
+
+            var auth = await _authorizationService.AuthorizeAsync(
+            User, patient, "CanEditPatient");
+
+            if (!auth.Succeeded)
+                return Forbid();
 
             if (await _patientService.DeleteAsync(id))
                 return Ok($"Patient with ID {id} has been deleted.");
@@ -169,6 +179,7 @@ public class PatientController : ControllerBase
 
 
     // GET: api/patient
+    [Authorize(Policy = "AdminOrDoctorRole")]
     [HttpGet("SearchPatients/{term}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -184,8 +195,8 @@ public class PatientController : ControllerBase
     }
 
 
-   // [Authorize(Roles = Roles.Admin + "," + Roles.Doctor)] // استثناء
     // GET: api/patient/{id}
+    [Authorize]
     [HttpGet("GetPatientByUserId/{userId}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -194,18 +205,37 @@ public class PatientController : ControllerBase
     {
         if (userId < 1)
         {
-            return BadRequest($"Not accepted userId {userId}");
+            return BadRequest();
         }
 
         var patient = await _patientService.GetPatientByUserIdAsync(userId);
         if (patient == null)
         {
-            return NotFound($"Patient with ID {userId} not found.");
+            return NotFound();
         }
+
+        var auth = await _authorizationService.AuthorizeAsync(
+    User, patient, "CanAccessPatient");
+
+        if (!auth.Succeeded)
+            return Forbid();
+
+
         return Ok(patient);
     }
 
+    [Authorize]
+    [HttpGet("MyProfile")]
+    public async Task<ActionResult<PatientDto>> GetMyProfile()
+    {
+        var userId = GetUserId();
 
+        var patient = await _patientService.GetPatientByUserIdAsync(userId);
+        if (patient == null)
+            return NotFound();
+
+        return Ok(patient);
+    }
 
 
     [HttpGet("dashboard/{patientId}")]
@@ -218,6 +248,17 @@ public class PatientController : ControllerBase
             {
                 return BadRequest($"Not accepted patientId {patientId}");
             }
+
+            var patient = await _patientService.GetByIdAsync(patientId);
+
+            if (patient == null)
+                return NotFound();
+
+            var auth = await _authorizationService.AuthorizeAsync(
+                User, patient, "CanAccessPatient");
+
+            if (!auth.Succeeded)
+                return Forbid();
 
             // جلب بيانات لوحة التحكم
 

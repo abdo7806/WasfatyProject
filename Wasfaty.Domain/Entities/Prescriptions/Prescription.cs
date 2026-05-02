@@ -12,6 +12,7 @@ public partial class Prescription//وصفة طبية
     public bool IsDispensed { get; set; }
 
     public virtual DispenseRecord? DispenseRecord { get; set; }
+    //public List<DispenseRecord> DispenseRecords { get; set; } = new();
 
     public virtual Doctor Doctor { get; set; } = null!;
 

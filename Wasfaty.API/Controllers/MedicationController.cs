@@ -19,7 +19,7 @@ public class MedicationController : ControllerBase
         _medicationService = medicationService;
     }
 
-    [Authorize(Roles = Roles.Admin + "," + Roles.Doctor)] // استثناء
+    [Authorize(Policy = "AdminOrPharmacistRole")]
     // GET: api/medications
     [HttpGet("All", Name = "GetAllMedication")]
     [ProducesResponseType(StatusCodes.Status200OK)]
@@ -28,9 +28,9 @@ public class MedicationController : ControllerBase
     {
         var medications = await _medicationService.GetAllAsync();
 
-        if (medications == null || !medications.Any() || medications.Count() == 0)
+        if (medications == null || !medications.Any())
         {
-            return NotFound("No medications centers found.");
+            return NotFound("No medications found.");
         }
 
         return Ok(medications);
@@ -38,7 +38,6 @@ public class MedicationController : ControllerBase
 
 
 
-    [Authorize(Roles = Roles.Admin + "," + Roles.Doctor + "," + Roles.Patient + "," + Roles.Pharmacist)] // استثناء
     // GET: api/medications/{id}
     [HttpGet("{id}", Name = "GetMedicationById")]
     [ProducesResponseType(StatusCodes.Status200OK)]
@@ -151,15 +150,26 @@ public class MedicationController : ControllerBase
         {
             if (string.IsNullOrWhiteSpace(ids))
                 return BadRequest("يجب تقديم قائمة IDs");
+            var idList = new List<int>();
 
-            var idList = ids.Split(',').Select(int.Parse).ToList();
+            foreach (var id in ids.Split(','))
+            {
+                if (!int.TryParse(id, out var parsedId))
+                    return BadRequest($"Invalid ID: {id}");
+
+                idList.Add(parsedId);
+            }
+
+ 
+
+            //var idList = ids.Split(',').Select(int.Parse).ToList();
 
             var result = await _medicationService.GetMedicationsByIdsAsync(idList);
 
 
             if (result == null)
             {
-                BadRequest("حصل طاء اثناء جلب الادوية");
+                return BadRequest("حصل خطأ أثناء جلب الأدوية");
             }
 
 

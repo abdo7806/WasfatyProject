@@ -1,7 +1,9 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Data;
 using System.Numerics;
+using System.Security.Claims;
 using Wasfaty.Application.Constants;
 using Wasfaty.Application.DTOs.Doctors;
 using Wasfaty.Application.DTOs.Prescriptions;
@@ -9,23 +11,38 @@ using Wasfaty.Application.Interfaces.IServices;
 
 [Route("api/[controller]")]
 [ApiController]
-//[Authorize(Roles = Roles.Admin)]
-
+[Authorize]
 public class PrescriptionController : ControllerBase
 {
     private readonly IPrescriptionService _prescriptionService;
     private readonly IDoctorService _doctorService;
     private readonly IPatientService _patientService;
+    private readonly IAuthorizationService _authorizationService;
 
-    public PrescriptionController(IPrescriptionService prescriptionService, 
-        IDoctorService doctorService, IPatientService patientService)
+    //private string? GetUserId() =>
+    //User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+    private int GetUserId() =>
+    int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+
+    private string? GetRole() =>
+        User.FindFirst(ClaimTypes.Role)?.Value;
+
+
+    public PrescriptionController(
+        IPrescriptionService prescriptionService,
+        IDoctorService doctorService,
+        IPatientService patientService,
+        IAuthorizationService authorizationService)
     {
         _prescriptionService = prescriptionService;
         _doctorService = doctorService;
         _patientService = patientService;
+        _authorizationService = authorizationService;
     }
 
     // GET: api/prescriptions
+    [Authorize(Policy = "AdminRole")]
     [HttpGet("All", Name = "GetAllPrescription")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -41,6 +58,8 @@ public class PrescriptionController : ControllerBase
     }
 
     // GET: api/prescriptions/{id}
+
+    [Authorize]
     [HttpGet("{id}", Name = "GetPrescriptionById")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -56,10 +75,19 @@ public class PrescriptionController : ControllerBase
         {
             return NotFound($"prescription with ID {id} not found.");
         }
+
+        var authResult = await _authorizationService.AuthorizeAsync(
+            User, prescription, "CanAccessPrescription");
+
+        if (!authResult.Succeeded)
+            return Forbid();
+
+
         return Ok(prescription);
     }
 
     // POST: api/prescriptions
+    [Authorize(Policy = "AdminOrDoctorRole")]
     [HttpPost("CreatePrescription")]
     [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -70,15 +98,19 @@ public class PrescriptionController : ControllerBase
         {
             return BadRequest("Invalid prescription data.");
         }
+        var role = GetRole();
+        var userId = GetUserId();
 
-        var doctors = await _doctorService.GetAllDoctorsAsync();
-
-        if (!doctors.Any(d=> d.Id == prescriptionDto.DoctorId))
+        if (role == "Doctor")
         {
-            return BadRequest("الطبيب مش موجود");
+            var doctor = await _doctorService.GetDoctorByUserIdAsync(userId);
 
+            if (doctor == null)
+                return Forbid();
+
+            if (prescriptionDto.DoctorId != doctor.Id)
+                return Forbid();
         }
-
         var patients = await _patientService.GetAllAsync();
 
         if (!patients.Any(d => d.Id == prescriptionDto.PatientId))
@@ -99,6 +131,7 @@ public class PrescriptionController : ControllerBase
     }
 
     // PUT: api/prescriptions/{id}
+    [Authorize(Policy = "AdminOrDoctorRole")]
     [HttpPut("{id}", Name = "UpdatePrescription")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -110,13 +143,7 @@ public class PrescriptionController : ControllerBase
             return BadRequest("Invalid ID.");
         }
 
-        var doctors = await _doctorService.GetAllDoctorsAsync();
 
-        if (!doctors.Any(d => d.Id == prescriptionDto.DoctorId))
-        {
-            return BadRequest("الطبيب مش موجود");
-
-        }
 
         var patients = await _patientService.GetAllAsync();
 
@@ -130,6 +157,13 @@ public class PrescriptionController : ControllerBase
         {
             return NotFound($"Prescription with ID {id} not found.");
         }
+        var auth = await _authorizationService.AuthorizeAsync(
+           User,
+           existingPrescription,
+           "CanEditPrescription");
+
+        if (!auth.Succeeded)
+            return Forbid();
 
         var updatedPrescription = await _prescriptionService.UpdateAsync(id, prescriptionDto);
         if (updatedPrescription == null)
@@ -140,6 +174,7 @@ public class PrescriptionController : ControllerBase
     }
 
     // DELETE: api/prescriptions/{id}
+    [Authorize(Policy = "AdminOrDoctorRole")]
     [HttpDelete("{id}", Name = "DeletePrescription")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -159,6 +194,14 @@ public class PrescriptionController : ControllerBase
             {
                 return NotFound($"Prescription center with ID {id} not found.");
             }
+            var auth = await _authorizationService.AuthorizeAsync(
+                User,
+                existingPrescription,
+                "CanEditPrescription");
+
+            if (!auth.Succeeded)
+                return Forbid();
+
 
             if (await _prescriptionService.DeleteAsync(id))
                 return Ok($"Prescription center ID {id} has been deleted.");
@@ -187,26 +230,38 @@ public class PrescriptionController : ControllerBase
             return BadRequest("Invalid ID.");
         }
 
-        var prescriptionService = await _prescriptionService.GetByIdAsync(id);
+
+        //var result = await _authorizationService.AuthorizeAsync(
+        //  User, id, "CanDispensePrescription");
+
+  
+        var prescription = await _prescriptionService.GetByIdAsync(id);
 
 
 
-        if (prescriptionService == null)
-        {
-            return BadRequest("الوصفه مش موجودة");
+        if (prescription == null)
+            return NotFound();
 
-        }
+
+        var auth = await _authorizationService.AuthorizeAsync(
+           User,
+           prescription,
+           "CanDispensePrescription");
+
+        if (!auth.Succeeded)
+            return Forbid();
+
+        prescription.IsDispensed = true;
 
         CreatePrescriptionDto existingprescriptionService = new CreatePrescriptionDto
         {
-            DoctorId = prescriptionService.DoctorId,
-            PatientId = prescriptionService.PatientId,
-            IssuedDate = prescriptionService.IssuedDate,
+            DoctorId = prescription.DoctorId,
+            PatientId = prescription.PatientId,
+            IssuedDate = prescription.IssuedDate,
             IsDispensed = true// جعل الوصفة مصروفة
         };
 
 
-        // existingDispenseRecord.isDispensed = true;
         var updatedDispenseRecord = await _prescriptionService.UpdateAsync(id, existingprescriptionService);
         if (updatedDispenseRecord == null)
         {
@@ -219,67 +274,106 @@ public class PrescriptionController : ControllerBase
 
 
 
-    // GET: api/GetByDoctorIdAsync
-    [HttpGet("GetByDoctorId/{doctorId}")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<List<PrescriptionDto>>> GetByDoctorId(int doctorId)
+    //// GET: api/GetByDoctorIdAsync
+    //[Authorize(Policy = "DoctorRole")]
+    //[HttpGet("GetByDoctorId/{doctorId}")]
+    //[ProducesResponseType(StatusCodes.Status200OK)]
+    //[ProducesResponseType(StatusCodes.Status404NotFound)]
+    //public async Task<ActionResult<List<PrescriptionDto>>> GetByDoctorId(int doctorId)
+    //{
+    //    if (doctorId < 1)
+    //    {
+    //        return BadRequest("Invalid ID.");
+    //    }
+
+    //    var authResult = await _authorizationService.AuthorizeAsync(
+    //         User, doctorId, "CanAccessPrescription");
+
+    //    if (!authResult.Succeeded)
+    //        return Forbid();
+
+    //    var prescriptions = await _prescriptionService.GetByDoctorIdAsync(doctorId);
+
+    //    if (prescriptions == null || !prescriptions.Any() || prescriptions.Count() == 0)
+    //    {
+    //        return NotFound("No doctors found.");
+    //    }
+    //    return Ok(prescriptions);
+    //}
+
+    [HttpGet("MyPrescriptions")]
+    public async Task<ActionResult<List<PrescriptionDto>>> GetMyPrescriptions()
     {
-        var prescriptions = await _prescriptionService.GetByDoctorIdAsync(doctorId);
+        var userId = GetUserId();
+        var role = GetRole();
 
-        if (prescriptions == null || !prescriptions.Any() || prescriptions.Count() == 0)
+        if (role == "Doctor")
         {
-            return NotFound("No doctors found.");
+            var doctor = await _doctorService.GetDoctorByUserIdAsync(userId);
+            if (doctor == null) return Forbid();
+
+            return Ok(await _prescriptionService.GetByDoctorIdAsync(doctor.Id));
         }
-        return Ok(prescriptions);
+
+        if (role == "Patient")
+        {
+            var patient = await _patientService.GetPatientByUserIdAsync(userId);
+            if (patient == null) return Forbid();
+
+            return Ok(await _prescriptionService.GetByPatientIdAsync(patient.Id));
+        }
+
+
+        return Forbid();
     }
-
-
 
 
     // GET: api/prescriptions
-    [HttpGet("GetByPatientId/{PatientId}")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<List<PrescriptionDto>>> GetByPatientId(int PatientId)
-    {
+    //[Authorize]
+    //[HttpGet("GetByPatientId/{PatientId}")]
+    //[ProducesResponseType(StatusCodes.Status200OK)]
+    //[ProducesResponseType(StatusCodes.Status404NotFound)]
+    //public async Task<ActionResult<List<PrescriptionDto>>> GetByPatientId(int PatientId)
+    //{
 
-        if (PatientId < 1)
-        {
-            return BadRequest("Invalid ID.");
-        }
-        var prescriptions = await _prescriptionService.GetByPatientIdAsync(PatientId);
+    //    if (PatientId < 1)
+    //    {
+    //        return BadRequest("Invalid ID.");
+    //    }
 
-        if (prescriptions == null || !prescriptions.Any() || prescriptions.Count() == 0)
-        {
-            return NotFound("No doctors found.");
-        }
-
-        return Ok(prescriptions);
-    }
+    //    var authResult = await _authorizationService.AuthorizeAsync(
+    //       User, PatientId, "CanAccessPrescription");
 
 
+    //    if (!authResult.Succeeded)
+    //        return Forbid();
+
+    //    var prescriptions = await _prescriptionService.GetByPatientIdAsync(PatientId);
+
+    //    if (prescriptions == null || !prescriptions.Any() || prescriptions.Count() == 0)
+    //    {
+    //        return NotFound("No doctors found.");
+    //    }
+
+    //    return Ok(prescriptions);
+    //}
+
+    [Authorize(Policy = "AdminRole")]
 
     [HttpGet("dashboard")]
     public async Task<IActionResult> GetDashboardData()
     {
         try
         {
-
-          
-
             // جلب بيانات لوحة التحكم
-
             var dashboardData = await _prescriptionService.GetDashboardDataAsync();
 
             if (dashboardData == null)
             {
                 return NotFound($"dashboardData not found.");
             }
+
             return Ok(dashboardData);
-
-
-
         }
         catch (Exception ex)
         {
@@ -292,6 +386,7 @@ public class PrescriptionController : ControllerBase
 
 
     // GET: api/prescriptions
+    [Authorize(Policy = "AdminOrPharmacistRole")]
     [HttpGet("Pending", Name = "GetAllPrescriptionPending")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -311,6 +406,7 @@ public class PrescriptionController : ControllerBase
 
     // الحصول على وصفات جديدة منذ آخر معرف
     [HttpGet("New/{lastPrescriptionId}")]
+    [Authorize(Policy = "AdminOrDoctorRole")]
     public async Task<IActionResult> GetNewPrescriptions(int lastPrescriptionId)
     {
 

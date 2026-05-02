@@ -1,9 +1,23 @@
 
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
+using Wasfaty.API.Authorization;
+using Wasfaty.API.Authorization.DispenseRecordAuthorization.Handlers;
+using Wasfaty.API.Authorization.DispenseRecordAuthorization.Requirements;
+using Wasfaty.API.Authorization.DoctorAuthorization.Handlers;
+using Wasfaty.API.Authorization.DoctorAuthorization.Requirements;
+using Wasfaty.API.Authorization.PatientAuthorization.Handlers;
+using Wasfaty.API.Authorization.PatientAuthorization.Requirements;
+using Wasfaty.API.Authorization.PharmacistAuthorization.Handlers;
+using Wasfaty.API.Authorization.PharmacistAuthorization.Requirements;
+using Wasfaty.API.Authorization.PrescriptionAuthorization.Handlers;
+using Wasfaty.API.Authorization.PrescriptionAuthorization.Requirements;
+using Wasfaty.API.Authorization.UserAuthorization.Handlers;
+using Wasfaty.API.Authorization.UserAuthorization.Requirements;
 using Wasfaty.Application.Constants;
 using Wasfaty.Application.Interfaces.IRepositories;
 using Wasfaty.Application.Interfaces.IServices;
@@ -55,7 +69,83 @@ builder.Services.AddAuthorization(options =>
        policy.RequireAssertion(context =>
            context.User.IsInRole(Roles.Admin) || context.User.IsInRole(Roles.Doctor)));
 
+    options.AddPolicy("AdminOrPharmacistRole", policy =>
+       policy.RequireAssertion(context =>
+           context.User.IsInRole(Roles.Admin) 
+           || context.User.IsInRole(Roles.Pharmacist)));
+
 });
+
+
+
+
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("CanAccessPrescription", policy =>
+    policy.Requirements.Add(new CanAccessPrescriptionRequirement()));
+
+    options.AddPolicy("CanEditPrescription", policy =>
+        policy.Requirements.Add(new CanEditPrescriptionRequirement()));
+
+    options.AddPolicy("CanDispensePrescription", policy =>
+        policy.Requirements.Add(new CanDispensePrescriptionRequirement()));
+
+    // user
+
+    options.AddPolicy("CanAccessUser", policy =>
+    policy.Requirements.Add(new CanAccessUserRequirement()));
+
+    options.AddPolicy("CanEditUser", policy =>
+        policy.Requirements.Add(new CanEditUserRequirement()));
+
+    // Patient
+    options.AddPolicy("CanAccessPatient", policy =>
+    policy.Requirements.Add(new CanAccessPatientRequirement()));
+
+    options.AddPolicy("CanEditPatient", policy =>
+        policy.Requirements.Add(new CanEditPatientRequirement()));
+
+    // Doctor
+    options.AddPolicy("CanAccessDoctor", policy =>
+    policy.Requirements.Add(new CanAccessDoctorRequirement()));
+
+    options.AddPolicy("CanEditDoctor", policy =>
+        policy.Requirements.Add(new CanEditDoctorRequirement()));
+
+    // Pharmacist
+    options.AddPolicy("CanAccessPharmacist", policy =>
+    policy.Requirements.Add(new CanAccessPharmacistRequirement()));
+
+    options.AddPolicy("CanEditPharmacist", policy =>
+        policy.Requirements.Add(new CanEditPharmacistRequirement()));
+
+    // DispenseRecord
+    options.AddPolicy("CanAccessDispenseRecord",
+    policy => policy.Requirements.Add(new CanAccessDispenseRecordRequirement()));
+
+    options.AddPolicy("CanEditDispenseRecord",
+        policy => policy.Requirements.Add(new CanEditDispenseRecordRequirement()));
+});
+
+builder.Services.AddScoped<IAuthorizationHandler, CanAccessPrescriptionHandler>();
+builder.Services.AddScoped<IAuthorizationHandler, CanEditPrescriptionHandler>();
+builder.Services.AddScoped<IAuthorizationHandler, CanDispensePrescriptionHandler>();
+
+
+builder.Services.AddScoped<IAuthorizationHandler, CanAccessUserHandler>();
+builder.Services.AddScoped<IAuthorizationHandler, CanEditUserHandler>();
+
+builder.Services.AddScoped<IAuthorizationHandler, CanAccessPatientHandler>();
+builder.Services.AddScoped<IAuthorizationHandler, CanEditPatientHandler>();
+
+builder.Services.AddScoped<IAuthorizationHandler, CanAccessDoctorHandler>();
+builder.Services.AddScoped<IAuthorizationHandler, CanEditDoctorHandler>();
+
+builder.Services.AddScoped<IAuthorizationHandler, CanAccessPharmacistHandler>();
+builder.Services.AddScoped<IAuthorizationHandler, CanEditPharmacistHandler>();
+
+builder.Services.AddScoped<IAuthorizationHandler, CanAccessDispenseRecordHandler>();
+builder.Services.AddScoped<IAuthorizationHandler, CanEditDispenseRecordHandler>();
 
 // ≈÷«›… «·Œœ„« 
 builder.Services.AddControllers();
@@ -143,6 +233,8 @@ builder.Services.AddScoped<IDispenseRecordService, DispenseRecordService>();
 builder.Services.AddScoped<IAdminRepository, AdminRepository>();
 builder.Services.AddScoped<IAdminService, AdminService>();
 
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+
 
 builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
 builder.Services.AddTransient<IEmailService, EmailService>();
@@ -150,6 +242,7 @@ builder.Services.AddTransient<IEmailService, EmailService>();
 
 builder.Services.Configure<SendGridSettings>(builder.Configuration.GetSection("SendGrid"));
 builder.Services.AddTransient<IEmailService, SendGridEmailService>();
+
 // ≈÷«›… Œœ„«  Swagger
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>

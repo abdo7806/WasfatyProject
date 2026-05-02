@@ -50,7 +50,7 @@ namespace Wasfaty.Infrastructure.Migrations
                     b.HasIndex("PrescriptionId")
                         .IsUnique();
 
-                    b.ToTable("DispenseRecords");
+                    b.ToTable("DispenseRecords", (string)null);
                 });
 
             modelBuilder.Entity("Doctor", b =>
@@ -80,7 +80,7 @@ namespace Wasfaty.Infrastructure.Migrations
                     b.HasIndex("UserId")
                         .IsUnique();
 
-                    b.ToTable("Doctors");
+                    b.ToTable("Doctors", (string)null);
                 });
 
             modelBuilder.Entity("MedicalCenter", b =>
@@ -103,7 +103,7 @@ namespace Wasfaty.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("MedicalCenters");
+                    b.ToTable("MedicalCenters", (string)null);
                 });
 
             modelBuilder.Entity("Medication", b =>
@@ -129,7 +129,7 @@ namespace Wasfaty.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Medications");
+                    b.ToTable("Medications", (string)null);
                 });
 
             modelBuilder.Entity("Patient", b =>
@@ -157,7 +157,7 @@ namespace Wasfaty.Infrastructure.Migrations
                     b.HasIndex("UserId")
                         .IsUnique();
 
-                    b.ToTable("Patients");
+                    b.ToTable("Patients", (string)null);
                 });
 
             modelBuilder.Entity("Pharmacist", b =>
@@ -184,7 +184,7 @@ namespace Wasfaty.Infrastructure.Migrations
                     b.HasIndex("UserId")
                         .IsUnique();
 
-                    b.ToTable("Pharmacists");
+                    b.ToTable("Pharmacists", (string)null);
                 });
 
             modelBuilder.Entity("Pharmacy", b =>
@@ -207,7 +207,7 @@ namespace Wasfaty.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Pharmacies");
+                    b.ToTable("Pharmacies", (string)null);
                 });
 
             modelBuilder.Entity("Prescription", b =>
@@ -236,7 +236,7 @@ namespace Wasfaty.Infrastructure.Migrations
 
                     b.HasIndex("PatientId");
 
-                    b.ToTable("Prescriptions");
+                    b.ToTable("Prescriptions", (string)null);
                 });
 
             modelBuilder.Entity("PrescriptionItem", b =>
@@ -280,7 +280,7 @@ namespace Wasfaty.Infrastructure.Migrations
 
                     b.HasIndex("PrescriptionId");
 
-                    b.ToTable("PrescriptionItems", t =>
+                    b.ToTable("PrescriptionItems", null, t =>
                         {
                             t.HasCheckConstraint("CHK_PrescriptionItem_Medication", "([MedicationId] IS NOT NULL OR ([CustomMedicationName] IS NOT NULL AND [CustomMedicationDescription] IS NOT NULL))");
                         });
@@ -300,7 +300,7 @@ namespace Wasfaty.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Roles");
+                    b.ToTable("Roles", (string)null);
                 });
 
             modelBuilder.Entity("User", b =>
@@ -333,7 +333,7 @@ namespace Wasfaty.Infrastructure.Migrations
 
                     b.HasIndex("RoleId");
 
-                    b.ToTable("Users");
+                    b.ToTable("Users", (string)null);
                 });
 
             modelBuilder.Entity("DispenseRecord", b =>

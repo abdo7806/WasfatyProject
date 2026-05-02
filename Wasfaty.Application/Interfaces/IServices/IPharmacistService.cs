@@ -39,7 +39,7 @@ namespace Wasfaty.Application.Interfaces.IServices
         /// <summary>
         /// الحصول على كل الصيادلة المرتبطة ربقم المستخدم
         /// </summary>
-        Task<PharmacistDto> GetPharmacyByUserIdAsync(int userId);
+        Task<PharmacistDto> GetPharmacistByUserIdAsync(int userId);
 
 
         Task<PharmacistDashboardStatsDto> GetPharmacistDataAsync(int PharmacistId);//صفحة لوحة القيادة للصيدلي

@@ -192,6 +192,7 @@ public class PrescriptionService : IPrescriptionService
         var existingPrescription = await _prescriptionRepository.GetByIdAsync(id);
         if (existingPrescription == null) return null;
 
+
         existingPrescription.DoctorId = prescriptionDto.DoctorId;
         existingPrescription.PatientId = prescriptionDto.PatientId;
         existingPrescription.IssuedDate = prescriptionDto.IssuedDate;
