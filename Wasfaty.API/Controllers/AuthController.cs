@@ -58,7 +58,7 @@ public class AuthController : ControllerBase
             return Unauthorized("Invalid email or password");
 
 
-        // ✅ تخزين Refresh Token في HttpOnly Cookie
+        //  تخزين Refresh Token في HttpOnly Cookie
         SetRefreshTokenCookie(refreshToken);
 
         //var token = await _authService.LoginAsync(request);
@@ -67,20 +67,29 @@ public class AuthController : ControllerBase
         //{
         //    return Unauthorized("Invalid email or password");
         //}
+
+
         return Ok(new
         {
             Token = result.AccessToken,      // Access Token فقط
             User = result.User,
-            ExpiresIn = result.ExpiresIn
+            ExpiresIn = result.ExpiresIn,
+            RefreshToken = refreshToken
         });
     }
 
     [HttpPost("refresh")]
     [AllowAnonymous]
-    public async Task<IActionResult> Refresh()
+    public async Task<IActionResult> Refresh([FromBody] RefreshTokenRequestDto? request = null)
     {
-        // ✅ جلب Refresh Token من الـ Cookie (وليس من Body)
+        //  جلب Refresh Token من الـ Cookie أولاً، ثم من الـ Body
         var refreshToken = Request.Cookies["refreshToken"];
+
+        // إذا لم يوجد في Cookie، حاول جلبها من Body (لـ Flutter Web)
+        if (string.IsNullOrEmpty(refreshToken) && request != null)
+        {
+            refreshToken = request.RefreshToken;
+        }
 
         if (string.IsNullOrEmpty(refreshToken))
             return Unauthorized(new { message = "No refresh token found" });
@@ -93,27 +102,46 @@ public class AuthController : ControllerBase
         if (result == null)
             return Unauthorized(new { message = "Invalid or expired refresh token" });
 
-        // ✅ تحديث الـ Cookie بـ Refresh Token الجديد (Token Rotation)
+        //  تحديث الـ Cookie بـ Refresh Token الجديد (Token Rotation)
         SetRefreshTokenCookie(newRefreshToken);
 
 
-        // ✅ تحديث الـ Cookie بـ Refresh Token جديد (سيتم إنشاؤه في الـ Service)
+        //  تحديث الـ Cookie بـ Refresh Token جديد (سيتم إنشاؤه في الـ Service)
         // ملاحظة: الـ Refresh Token الجديد تم إنشاؤه داخل الـ Service
         // نحتاج لإرجاعه من الـ Service أيضاً
 
+
+
+        // في الويب نرجع AccessToken فقط
+        if (Request.Cookies.ContainsKey("refreshToken"))
+        {
+            return Ok(new
+            {
+                AccessToken = result.AccessToken,
+                ExpiresIn = result.ExpiresIn
+            });
+        }
+
+        // في الموبايل نرجع ايضن RefreshToken
         return Ok(new
         {
             AccessToken = result.AccessToken,
-            ExpiresIn = result.ExpiresIn
+            ExpiresIn = result.ExpiresIn,
+            RefreshToken = newRefreshToken
         });
     }
 
     [HttpPost("logout")]
     [Authorize]
-    public async Task<IActionResult> Logout()
+    public async Task<IActionResult> Logout([FromBody] RefreshTokenRequestDto? request = null)
     {
-        // ✅ جلب Refresh Token من الـ Cookie
+        //  جلب Refresh Token من الـ Cookie
         var refreshToken = Request.Cookies["refreshToken"];
+
+        if (string.IsNullOrEmpty(refreshToken))
+        {
+            refreshToken = request?.RefreshToken;
+        }
 
         if (string.IsNullOrEmpty(refreshToken))
             return BadRequest("No active session found");
@@ -125,7 +153,7 @@ public class AuthController : ControllerBase
         if (!result)
             return BadRequest("Logout failed");
 
-        // ✅ مسح الـ Cookie
+        //  مسح الـ Cookie
         Response.Cookies.Delete("refreshToken");
 
         return Ok(new { message = "Logged out successfully" });
@@ -141,7 +169,7 @@ public class AuthController : ControllerBase
         if (!result)
             return BadRequest("Failed to revoke tokens");
 
-        // ✅ مسح الـ Cookie
+        //  مسح الـ Cookie
         Response.Cookies.Delete("refreshToken");
 
         return Ok(new { message = "All sessions have been terminated" });
@@ -174,10 +202,10 @@ public class AuthController : ControllerBase
         if (!result)
             return BadRequest("Failed to change password.");
 
-        // ✅ بعد تغيير الباسورد، اسحب كل التوكنات
+        //  بعد تغيير الباسورد، اسحب كل التوكنات
         await _authService.RevokeAllUserTokensAsync(userId);
 
-        // ✅ مسح الـ Cookie
+        //  مسح الـ Cookie
         Response.Cookies.Delete("refreshToken");
 
         return Ok("Password changed successfully.");
@@ -221,77 +249,37 @@ public class AuthController : ControllerBase
         return ip ?? "Unknown IP";
     }
 
-    //private void SetRefreshTokenCookie(string refreshToken)
-    //{
-    //    var settings = _cookieSettings.Value;
-
-    //    //  تحويل SameSite من string إلى enum
-    //    var sameSiteMode = settings.SameSite?.ToLower() switch
-    //    {
-    //        "strict" => SameSiteMode.Strict,
-    //        "lax" => SameSiteMode.Lax,
-    //        "none" => SameSiteMode.None,
-    //        _ => SameSiteMode.Lax
-    //    };
-
-    //    // ✅ إعدادات أمان متقدمة للـ Cookie
-    //    var cookieOptions = new CookieOptions
-    //    {
-    //        HttpOnly = true,                    // 🔒 منع الوصول من JavaScript (يمنع XSS)
-    //        Secure = settings.Secure,                      // 🔒 يرسل فقط عبر HTTPS
-    //        SameSite = sameSiteMode,    // 🔒 منع CSRF
-    //        Expires = DateTime.UtcNow.AddDays(settings.RefreshTokenExpirationDays),
-    //        Path = "/",                         // متاح لكل المسارات
-    //        Domain = null,                      // يستخدم الـ domain الحالي تلقائياً
-    //        IsEssential = true                  // مهم للتطبيق
-    //    };
-
-    //    //  للتطوير على localhost
-    //    if (Request.Host.Host == "localhost")
-    //    {
-    //        cookieOptions.Secure = false;
-    //        cookieOptions.SameSite = SameSiteMode.Lax;
-    //    }
-
-    //    // ✅ إضافة SameSite=None لـ Cross-domain لو محتاج (بحذر)
-    //    // cookieOptions.SameSite = SameSiteMode.None;
-
-    //    Response.Cookies.Append("refreshToken", refreshToken, cookieOptions);
-    //}
-
     private void SetRefreshTokenCookie(string refreshToken)
     {
         var settings = _cookieSettings.Value;
 
         // تحويل SameSite من string إلى enum
-        var sameSiteMode = settings.SameSite?.ToLower() switch
-        {
-            "strict" => SameSiteMode.Strict,
-            "lax" => SameSiteMode.Lax,
-            "none" => SameSiteMode.None,
-            _ => SameSiteMode.Lax
-        };
+        //var sameSiteMode = settings.SameSite?.ToLower() switch
+        //{
+        //    "strict" => SameSiteMode.Strict,
+        //    "lax" => SameSiteMode.Lax,
+        //    "none" => SameSiteMode.None,
+        //    _ => SameSiteMode.Lax
+        //};
 
-        // ✅ إعدادات Cookie (معدلة للتطوير)
+        //  إعدادات Cookie (معدلة للتطوير)
         var cookieOptions = new CookieOptions
         {
             HttpOnly = true,
-            Secure = true, // ✅ مهم جدًا
-            SameSite = SameSiteMode.None,  // ✅ None هو المفتاح!
+            Secure = true, //  مهم جدًا
+            SameSite = SameSiteMode.None,  //  None هو المفتاح!
             Expires = DateTime.UtcNow.AddDays(settings.RefreshTokenExpirationDays),
             Path = "/",
             IsEssential = true,
-            //Domain = null  // ✅ يسمح بالـ Cookie على أي subdomain
-
-
+            //Domain = null  //  يسمح بالـ Cookie على أي subdomain
         };
 
-        // ✅ إضافة Domain (اختياري)
+        //  إضافة Domain (اختياري)
         // cookieOptions.Domain = "localhost";  // إذا كنت تريد تحديد الـ Domain
 
         Response.Cookies.Append("refreshToken", refreshToken, cookieOptions);
 
-        // ✅ للتأكد
-        Console.WriteLine($"Cookie set with SameSite=None, Secure=false");
+        //  للتأكد
+        Console.WriteLine("Cookie set with SameSite=None, Secure=true");
     }
 }

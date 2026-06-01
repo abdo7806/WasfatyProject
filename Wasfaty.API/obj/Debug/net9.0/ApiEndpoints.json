@@ -67,7 +67,13 @@
     "HttpMethod": "POST",
     "IsController": true,
     "Order": 0,
-    "Parameters": [],
+    "Parameters": [
+      {
+        "Name": "request",
+        "Type": "Wasfaty.Application.DTOs.Auth.RefreshTokenRequestDto",
+        "IsRequired": false
+      }
+    ],
     "ReturnTypes": []
   },
   {
@@ -77,7 +83,13 @@
     "HttpMethod": "POST",
     "IsController": true,
     "Order": 0,
-    "Parameters": [],
+    "Parameters": [
+      {
+        "Name": "request",
+        "Type": "Wasfaty.Application.DTOs.Auth.RefreshTokenRequestDto",
+        "IsRequired": false
+      }
+    ],
     "ReturnTypes": []
   },
   {

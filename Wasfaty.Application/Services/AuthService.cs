@@ -41,7 +41,7 @@ public class AuthService : IAuthService
         _cookieSettings = cookieSettings;
     }
 
-    // ✅ 5. تغيير كلمة المرور
+    //  5. تغيير كلمة المرور
     public async Task<bool> ChangeUserPassword(int userId, string currentPassword, string newPassword)
     {
         var user = await _userRepository.GetByIdAsync(userId);
@@ -54,7 +54,7 @@ public class AuthService : IAuthService
     }
 
  
-    // ✅ 1. تسجيل الدخول - ترجع الـ Refresh Token في Tuple
+    //  1. تسجيل الدخول - ترجع الـ Refresh Token في Tuple
     public async Task<(LoginResponseDto Result, string RefreshToken)> LoginAsync(
         LoginRequestDto request,
         string deviceInfo = null,
@@ -165,7 +165,7 @@ public class AuthService : IAuthService
         var newRefreshTokenEntity = new RefreshToken
         {
             Token = newRefreshToken,
-            Expires = DateTime.UtcNow.AddDays(refreshTokenLifetimeDays), // ✅ من الإعدادات
+            Expires = DateTime.UtcNow.AddDays(refreshTokenLifetimeDays), //  من الإعدادات
             UserId = user.Id,
             DeviceInfo = storedToken.DeviceInfo,
             IpAddress = storedToken.IpAddress,
@@ -177,7 +177,7 @@ public class AuthService : IAuthService
 
         var accessTokenLifetimeMinutes = _jwtSettings.Value.AccessTokenLifetimeInMinutes;
 
-        // ✅ إرجاع Access Token فقط (Read refresh token سيتم إعادته في Cookie)
+        //  إرجاع Access Token فقط (Read refresh token سيتم إعادته في Cookie)
         var result = new RefreshTokenResponseDto
         {
             AccessToken = newAccessToken,

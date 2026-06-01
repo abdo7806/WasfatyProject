@@ -29,7 +29,7 @@ namespace Wasfaty.Infrastructure.Seeders
 
                 await dbContext.SaveChangesAsync();
 
-                Console.WriteLine("✅ Database seeding completed successfully.");
+                Console.WriteLine(" Database seeding completed successfully.");
             }
             catch (Exception ex)
             {
@@ -60,7 +60,7 @@ namespace Wasfaty.Infrastructure.Seeders
                     };
 
                     await dbContext.Roles.AddAsync(role);
-                    Console.WriteLine($"✅ Role '{roleName}' created successfully.");
+                    Console.WriteLine($" Role '{roleName}' created successfully.");
                 }
                 else
                 {
