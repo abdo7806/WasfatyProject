@@ -2,7 +2,7 @@
 {
     public class CreatePrescriptionItemDto
     {
-        public int PrescriptionId { get; set; }
+        //public int PrescriptionId { get; set; }
         // إما MedicationId (لأدوية موجودة)
         public int? MedicationId { get; set; }
 

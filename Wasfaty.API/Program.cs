@@ -1,7 +1,374 @@
+ï»¿
+//using Microsoft.AspNetCore.Authentication.JwtBearer;
+//using Microsoft.AspNetCore.Authorization;
+//using Microsoft.EntityFrameworkCore;
+//using Microsoft.IdentityModel.Tokens;
+//using Microsoft.OpenApi.Models;
+//using System.Text;
+//using Wasfaty.API.Authorization;
+//using Wasfaty.API.Authorization.DispenseRecordAuthorization.Handlers;
+//using Wasfaty.API.Authorization.DispenseRecordAuthorization.Requirements;
+//using Wasfaty.API.Authorization.DoctorAuthorization.Handlers;
+//using Wasfaty.API.Authorization.DoctorAuthorization.Requirements;
+//using Wasfaty.API.Authorization.PatientAuthorization.Handlers;
+//using Wasfaty.API.Authorization.PatientAuthorization.Requirements;
+//using Wasfaty.API.Authorization.PharmacistAuthorization.Handlers;
+//using Wasfaty.API.Authorization.PharmacistAuthorization.Requirements;
+//using Wasfaty.API.Authorization.PrescriptionAuthorization.Handlers;
+//using Wasfaty.API.Authorization.PrescriptionAuthorization.Requirements;
+//using Wasfaty.API.Authorization.UserAuthorization.Handlers;
+//using Wasfaty.API.Authorization.UserAuthorization.Requirements;
+//using Wasfaty.Application.Constants;
+//using Wasfaty.Application.Interfaces.IRepositories;
+//using Wasfaty.Application.Interfaces.IServices;
+//using Wasfaty.Application.Services;
+//using Wasfaty.Infrastructure.Data;
+//using Wasfaty.Infrastructure.Repositories;
+//using Wasfaty.Infrastructure.Seeders;
+//using Wasfaty.Infrastructure.Services;
+//using Wasfaty.Infrastructure.Services.EmailServices;
+
+//var builder = WebApplication.CreateBuilder(args);
+//// Ø¥Ø¶Ø§ÙØ© CORS Ù„Ù„Ø³Ù…Ø§Ø­ Ø¨Ø§Ù„ÙˆØµÙˆÙ„ Ø§Ù„Ø¹Ø§Ù…
+//builder.Services.AddCors(options =>
+//{
+//    options.AddPolicy("AllowAll",
+//        policy =>
+//        {
+//            policy.AllowAnyOrigin()  // Ø§Ù„Ø³Ù…Ø§Ø­ Ø¨Ø£ÙŠ Ù…ØµØ¯Ø±
+//                  .AllowAnyMethod()  // Ø§Ù„Ø³Ù…Ø§Ø­ Ø¨Ø£ÙŠ Ø·Ø±ÙŠÙ‚Ø© (GET, POST, PUT, DELETE)
+//                  .AllowAnyHeader(); // Ø§Ù„Ø³Ù…Ø§Ø­ Ø¨Ø£ÙŠ Ø±Ø£Ø³ (headers)
+//        });
+//});
+
+
+
+//builder.Services.AddCors(options =>
+//{
+//    options.AddPolicy("AllowFrontend",
+//        policy =>
+//        {
+//            policy.WithOrigins(
+//                    "https://yourfrontend.com",
+//                    "https://admin.yourfrontend.com"
+//                  )
+//                  .AllowAnyMethod()
+//                  .AllowAnyHeader()
+//                  .AllowCredentials(); // Ø¥Ø°Ø§ ØªØ³ØªØ®Ø¯Ù… JWT ÙÙŠ Ø§Ù„ÙƒÙˆÙƒÙŠØ²
+//        });
+//});
+
+//builder.Services.AddAuthorization(options =>
+//{
+//    options.AddPolicy("AdminRole", policy => policy.RequireRole(Roles.Admin));
+//    options.AddPolicy("DoctorRole", policy => policy.RequireRole(Roles.Doctor));
+//    options.AddPolicy("PatientRole", policy => policy.RequireRole(Roles.Patient));
+//    options.AddPolicy("PharmacistRole", policy => policy.RequireRole(Roles.Pharmacist));
+
+//    options.AddPolicy("AdminOrDoctorRole", policy =>
+//       policy.RequireAssertion(context =>
+//           context.User.IsInRole(Roles.Admin) || context.User.IsInRole(Roles.Doctor)));
+
+//    options.AddPolicy("AdminOrPharmacistRole", policy =>
+//       policy.RequireAssertion(context =>
+//           context.User.IsInRole(Roles.Admin) 
+//           || context.User.IsInRole(Roles.Pharmacist)));
+
+//});
+
+
+
+
+//builder.Services.AddAuthorization(options =>
+//{
+//    options.AddPolicy("CanAccessPrescription", policy =>
+//    policy.Requirements.Add(new CanAccessPrescriptionRequirement()));
+
+//    options.AddPolicy("CanEditPrescription", policy =>
+//        policy.Requirements.Add(new CanEditPrescriptionRequirement()));
+
+//    options.AddPolicy("CanDispensePrescription", policy =>
+//        policy.Requirements.Add(new CanDispensePrescriptionRequirement()));
+
+//    // user
+
+//    options.AddPolicy("CanAccessUser", policy =>
+//    policy.Requirements.Add(new CanAccessUserRequirement()));
+
+//    options.AddPolicy("CanEditUser", policy =>
+//        policy.Requirements.Add(new CanEditUserRequirement()));
+
+//    // Patient
+//    options.AddPolicy("CanAccessPatient", policy =>
+//    policy.Requirements.Add(new CanAccessPatientRequirement()));
+
+//    options.AddPolicy("CanEditPatient", policy =>
+//        policy.Requirements.Add(new CanEditPatientRequirement()));
+
+//    // Doctor
+//    options.AddPolicy("CanAccessDoctor", policy =>
+//    policy.Requirements.Add(new CanAccessDoctorRequirement()));
+
+//    options.AddPolicy("CanEditDoctor", policy =>
+//        policy.Requirements.Add(new CanEditDoctorRequirement()));
+
+//    // Pharmacist
+//    options.AddPolicy("CanAccessPharmacist", policy =>
+//    policy.Requirements.Add(new CanAccessPharmacistRequirement()));
+
+//    options.AddPolicy("CanEditPharmacist", policy =>
+//        policy.Requirements.Add(new CanEditPharmacistRequirement()));
+
+//    // DispenseRecord
+//    options.AddPolicy("CanAccessDispenseRecord",
+//    policy => policy.Requirements.Add(new CanAccessDispenseRecordRequirement()));
+
+//    options.AddPolicy("CanEditDispenseRecord",
+//        policy => policy.Requirements.Add(new CanEditDispenseRecordRequirement()));
+//});
+
+//builder.Services.AddScoped<IAuthorizationHandler, CanAccessPrescriptionHandler>();
+//builder.Services.AddScoped<IAuthorizationHandler, CanEditPrescriptionHandler>();
+//builder.Services.AddScoped<IAuthorizationHandler, CanDispensePrescriptionHandler>();
+
+
+//builder.Services.AddScoped<IAuthorizationHandler, CanAccessUserHandler>();
+//builder.Services.AddScoped<IAuthorizationHandler, CanEditUserHandler>();
+
+//builder.Services.AddScoped<IAuthorizationHandler, CanAccessPatientHandler>();
+//builder.Services.AddScoped<IAuthorizationHandler, CanEditPatientHandler>();
+
+//builder.Services.AddScoped<IAuthorizationHandler, CanAccessDoctorHandler>();
+//builder.Services.AddScoped<IAuthorizationHandler, CanEditDoctorHandler>();
+
+//builder.Services.AddScoped<IAuthorizationHandler, CanAccessPharmacistHandler>();
+//builder.Services.AddScoped<IAuthorizationHandler, CanEditPharmacistHandler>();
+
+//builder.Services.AddScoped<IAuthorizationHandler, CanAccessDispenseRecordHandler>();
+//builder.Services.AddScoped<IAuthorizationHandler, CanEditDispenseRecordHandler>();
+
+//// Ø¥Ø¶Ø§ÙØ© Ø§Ù„Ø®Ø¯Ù…Ø§Øª
+//builder.Services.AddControllers();
+//// Add services to the container.
+//// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
+//builder.Services.AddOpenApi();
+
+
+//// Ø¥Ø¹Ø¯Ø§Ø¯ Ø®Ø¯Ù…Ø§Øª Ø§Ù„Ù…ØµØ§Ø¯Ù‚Ø© Ø¨Ø§Ø³ØªØ®Ø¯Ø§Ù… JWT
+//builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+//    .AddJwtBearer(options =>
+//    {
+
+//        options.RequireHttpsMetadata = true;
+
+//        // Ø¥Ø¹Ø¯Ø§Ø¯ Ù…Ø¹Ù„Ù…Ø§Øª Ø§Ù„ØªØ­Ù‚Ù‚ Ù…Ù† ØµØ­Ø© Ø§Ù„ØªÙˆÙƒÙ†
+//        options.TokenValidationParameters = new TokenValidationParameters
+//        {
+//            // ØªØ­Ù‚Ù‚ Ù…Ù…Ø§ Ø¥Ø°Ø§ ÙƒØ§Ù† Ø§Ù„Ù…ÙØµØ¯Ø± Ù„Ù„ØªÙˆÙƒÙ† ØµØ­ÙŠØ­Ù‹Ø§
+//            ValidateIssuer = true,
+//            // ØªØ­Ù‚Ù‚ Ù…Ù…Ø§ Ø¥Ø°Ø§ ÙƒØ§Ù† Ø§Ù„Ø¬Ù…Ù‡ÙˆØ± Ø§Ù„Ù…Ø³ØªÙ‡Ø¯Ù Ù„Ù„ØªÙˆÙƒÙ† ØµØ­ÙŠØ­Ù‹Ø§
+//            ValidateAudience = true,
+//            // ØªØ­Ù‚Ù‚ Ù…Ù…Ø§ Ø¥Ø°Ø§ ÙƒØ§Ù†Øª ØµÙ„Ø§Ø­ÙŠØ© Ø§Ù„ØªÙˆÙƒÙ† Ù‚Ø¯ Ø§Ù†ØªÙ‡Øª
+//            ValidateLifetime = true,
+//            // ØªØ­Ù‚Ù‚ Ù…Ù…Ø§ Ø¥Ø°Ø§ ÙƒØ§Ù† Ù…ÙØªØ§Ø­ Ø§Ù„ØªÙˆÙ‚ÙŠØ¹ ØµØ­ÙŠØ­Ù‹Ø§
+//            ValidateIssuerSigningKey = true,
+//            // Ø§Ù„Ø¬Ù‡Ø© Ø§Ù„Ù…ØµØ¯Ø±Ø© Ù„Ù„ØªÙˆÙƒÙ†ØŒ ÙŠØªÙ… Ø§Ù„Ø­ØµÙˆÙ„ Ø¹Ù„ÙŠÙ‡Ø§ Ù…Ù† Ù…Ù„Ù Ø§Ù„Ø¥Ø¹Ø¯Ø§Ø¯Ø§Øª
+//            ValidIssuer = builder.Configuration["Jwt:Issuer"],
+//            // Ø§Ù„Ø¬Ù…Ù‡ÙˆØ± Ø§Ù„Ù…Ø³ØªÙ‡Ø¯Ù Ø§Ù„Ø°ÙŠ ÙŠØ³ØªØ®Ø¯Ù… Ø§Ù„ØªÙˆÙƒÙ†ØŒ ÙŠØªÙ… Ø§Ù„Ø­ØµÙˆÙ„ Ø¹Ù„ÙŠÙ‡ Ù…Ù† Ù…Ù„Ù Ø§Ù„Ø¥Ø¹Ø¯Ø§Ø¯Ø§Øª
+//            ValidAudience = builder.Configuration["Jwt:Audience"],
+//            // Ø§Ù„Ù…ÙØªØ§Ø­ Ø§Ù„Ø³Ø±ÙŠ Ø§Ù„Ø°ÙŠ ÙŠØ³ØªØ®Ø¯Ù… Ù„ØªÙˆÙ‚ÙŠØ¹ Ø§Ù„ØªÙˆÙƒÙ†ØŒ ÙŠØªÙ… ØªØ­ÙˆÙŠÙ„Ù‡ Ø¥Ù„Ù‰ Ù…ØµÙÙˆÙØ© Ø¨Ø§ÙŠØª
+//            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"])),
+
+//            ClockSkew = TimeSpan.Zero
+//        };
+//    });
+
+
+//// Ø¥Ø¶Ø§ÙØ© DbContext Ø§Ù„Ø®Ø§Øµ Ø¨Ùƒ Ù…Ø¹ Ø¥Ø¹Ø¯Ø§Ø¯ Ø§Ù„Ø§ØªØµØ§Ù„
+//builder.Services.AddDbContext<ApplicationDbContext>(options =>
+//    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+////// Ø¥Ø¶Ø§ÙØ© DbContext Ø§Ù„Ø®Ø§Øµ Ø¨Ùƒ Ù…Ø¹ Ø¥Ø¹Ø¯Ø§Ø¯ Ø§Ù„Ø§ØªØµØ§Ù„
+////builder.Services.AddDbContext<WasfatyDbContext>(options =>
+////    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+//builder.Services.AddScoped<IAuthRepository, AuthRepository>();
+//builder.Services.AddScoped<IAuthService, AuthService>();
+
+//builder.Services.AddScoped<IUserRepository, UserRepository>();
+//builder.Services.AddScoped<IUserService, UserService>();
+
+//builder.Services.AddScoped<IPatientRepository, PatientRepository>();
+//builder.Services.AddScoped<IPatientService, PatientService>();
+
+//builder.Services.AddScoped<IMedicalCenterRepository, MedicalCenterRepository>();
+//builder.Services.AddScoped<IMedicalCenterService, MedicalCenterService>();
+
+//builder.Services.AddScoped<IDoctorRepository, DoctorRepository>();
+//builder.Services.AddScoped<IDoctorService, DoctorService>();
+
+
+//builder.Services.AddScoped<IPharmacyRepository, PharmacyRepository>();
+//builder.Services.AddScoped<IPharmacyService, PharmacyService>();
+
+
+//builder.Services.AddScoped<IPharmacistRepository, PharmacistRepository>();
+//builder.Services.AddScoped<IPharmacistService, PharmacistService>();
+
+//builder.Services.AddScoped<IMedicationRepository, MedicationRepository>();
+//builder.Services.AddScoped<IMedicationService, MedicationService>();
+
+//builder.Services.AddScoped<IPrescriptionRepository, PrescriptionRepository>();
+//builder.Services.AddScoped<IPrescriptionService, PrescriptionService>();
+
+
+//builder.Services.AddScoped<IPrescriptionItemRepository, PrescriptionItemRepository>();
+//builder.Services.AddScoped<IPrescriptionItemService, PrescriptionItemService>();
+
+
+//builder.Services.AddScoped<IDispenseRecordRepository, DispenseRecordRepository>();
+//builder.Services.AddScoped<IDispenseRecordService, DispenseRecordService>();
+
+
+//builder.Services.AddScoped<IAdminRepository, AdminRepository>();
+//builder.Services.AddScoped<IAdminService, AdminService>();
+
+//builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+
+////builder.Services.AddScoped<ITokenService, TokenService>();
+//builder.Services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
+
+
+//builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
+//builder.Services.AddTransient<IEmailService, EmailService>();
+
+
+//builder.Services.Configure<SendGridSettings>(builder.Configuration.GetSection("SendGrid"));
+//builder.Services.AddTransient<IEmailService, SendGridEmailService>();
+
+//// Ø¥Ø¶Ø§ÙØ© Ø®Ø¯Ù…Ø§Øª Swagger
+//builder.Services.AddEndpointsApiExplorer();
+//builder.Services.AddSwaggerGen(options =>
+//{
+//    // ØªØ¹Ø±ÙŠÙ Security Scheme
+//    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+//    {
+//        Name = "Authorization",
+//        Type = SecuritySchemeType.Http,
+//        Scheme = "Bearer",
+//        BearerFormat = "JWT",
+//        In = ParameterLocation.Header,
+//        Description = "Enter JWT Token like this: Bearer {your token}"
+//    });
+
+//    // ØªØ·Ø¨ÙŠÙ‚Ù‡ Ø¹Ù„Ù‰ ÙƒÙ„ Ø§Ù„Ù€ APIs
+//    options.AddSecurityRequirement(new OpenApiSecurityRequirement
+//    {
+//        {
+//            new OpenApiSecurityScheme
+//            {
+//                Reference = new OpenApiReference
+//                {
+//                    Type = ReferenceType.SecurityScheme,
+//                    Id = "Bearer"
+//                }
+//            },
+//            Array.Empty<string>()
+//        }
+//    });
+//});
+
+//var app = builder.Build();
+
+
+//using (var scope = app.Services.CreateScope())
+//{
+//    try
+//    {
+//        var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+
+//        if ((await db.Database.GetPendingMigrationsAsync()).Any())
+//        {
+//            await db.Database.MigrateAsync();
+//        }
+
+//        await ApplicationDbSeeder.SeedAsync(scope.ServiceProvider);
+
+//        Console.WriteLine("Database migration and seeding completed successfully.");
+//    }
+//    catch (Exception ex)
+//    {
+//        Console.WriteLine($"Migration error: {ex.Message}");
+//    }
+//}
+
+//// ØªÙ…ÙƒÙŠÙ† Swagger
+//if (app.Environment.IsDevelopment())
+//{
+//    app.UseSwagger();  // ØªØ£ÙƒØ¯ Ù…Ù† Ø£Ù† Swagger ÙŠØ¹Ù…Ù„ Ø¨Ø´ÙƒÙ„ ØµØ­ÙŠØ­
+
+//    app.UseSwaggerUI(c =>
+//    {
+//        c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1");
+//        c.RoutePrefix = string.Empty; // Ù„Ø¹Ø±Ø¶ Ø§Ù„ÙˆØ§Ø¬Ù‡Ø© Ø¹Ù„Ù‰ Ø§Ù„Ø¬Ø°Ø±
+//    });
+//    app.MapOpenApi(); // ØªØ£ÙƒØ¯ Ù…Ù† Ø£Ù†Ùƒ ØªÙ‚ÙˆÙ… Ø¨ØªØ´ØºÙŠÙ„ MapOpenApi Ù‡Ù†Ø§
+
+
+//}
+
+
+
+//if (!app.Environment.IsDevelopment())
+//{
+//    app.UseHsts();
+//}
+
+//app.UseHttpsRedirection();
+
+//var summaries = new[]
+//{
+//    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
+//};
+
+//app.MapGet("/weatherforecast", () =>
+//{
+//    var forecast =  Enumerable.Range(1, 5).Select(index =>
+//        new WeatherForecast
+//        (
+//            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
+//            Random.Shared.Next(-20, 55),
+//            summaries[Random.Shared.Next(summaries.Length)]
+//        ))
+//        .ToArray();
+//    return forecast;
+//})
+//.WithName("GetWeatherForecast");
+
+
+//// Ù‡Ù†Ø§ØŒ ØªØ£ÙƒØ¯ Ù…Ù† Ø£Ù†Ùƒ ØªØ³ØªØ®Ø¯Ù… CORS Ø£ÙˆÙ„Ø§Ù‹ Ù‚Ø¨Ù„ Ø§Ù„Ù…ØµØ§Ø¯Ù‚Ø© ÙˆØ§Ù„Ù€ Authorization
+//app.UseCors("AllowAll");  // ØªØ·Ø¨ÙŠÙ‚ Ø³ÙŠØ§Ø³Ø© CORS
+
+//app.UseAuthentication();
+//app.UseAuthorization();
+
+//app.MapControllers();
+//app.Run();
+
+//record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
+//{
+//    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
+//}
+
+
+
+
 
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.CookiePolicy;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
@@ -22,6 +389,7 @@ using Wasfaty.Application.Constants;
 using Wasfaty.Application.Interfaces.IRepositories;
 using Wasfaty.Application.Interfaces.IServices;
 using Wasfaty.Application.Services;
+using Wasfaty.Application.Settings;
 using Wasfaty.Infrastructure.Data;
 using Wasfaty.Infrastructure.Repositories;
 using Wasfaty.Infrastructure.Seeders;
@@ -29,35 +397,42 @@ using Wasfaty.Infrastructure.Services;
 using Wasfaty.Infrastructure.Services.EmailServices;
 
 var builder = WebApplication.CreateBuilder(args);
-// ÅÖÇİÉ CORS ááÓãÇÍ ÈÇáæÕæá ÇáÚÇã
+
+
+
+// ============= âœ… Ø¥Ø¹Ø¯Ø§Ø¯Ø§Øª CORS Ø§Ù„ØµØ­ÙŠØ­Ø© =============
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowAll",
-        policy =>
-        {
-            policy.AllowAnyOrigin()  // ÇáÓãÇÍ ÈÃí ãÕÏÑ
-                  .AllowAnyMethod()  // ÇáÓãÇÍ ÈÃí ØÑíŞÉ (GET, POST, PUT, DELETE)
-                  .AllowAnyHeader(); // ÇáÓãÇÍ ÈÃí ÑÃÓ (headers)
-        });
+    options.AddPolicy("AllowSpecific", policy =>
+    {
+        policy.WithOrigins(
+            "http://localhost:3000",
+            "http://localhost:4200", 
+            "https://localhost:3000",
+            "https://localhost:7219",
+            "http://127.0.0.1:5500",    
+            "https://localhost:5500",
+            "https://localhost:4443",    
+
+                 "null"  // âœ… Ø£Ø¶Ù Ù‡Ø°Ø§ Ù„Ù„Ù…Ù„ÙØ§Øª Ø§Ù„Ù…Ø­Ù„ÙŠØ© (HTML)
+
+            )
+              .AllowAnyMethod()
+              .AllowAnyHeader()
+              .AllowCredentials();
+    });
 });
-
-
-
-builder.Services.AddCors(options =>
+// ============= 2. Ø¥Ø¹Ø¯Ø§Ø¯Ø§Øª Cookie Policy =============
+builder.Services.Configure<CookiePolicyOptions>(options =>
 {
-    options.AddPolicy("AllowFrontend",
-        policy =>
-        {
-            policy.WithOrigins(
-                    "https://yourfrontend.com",
-                    "https://admin.yourfrontend.com"
-                  )
-                  .AllowAnyMethod()
-                  .AllowAnyHeader()
-                  .AllowCredentials(); // ÅĞÇ ÊÓÊÎÏã JWT İí ÇáßæßíÒ
-        });
+    options.CheckConsentNeeded = context => false;  // Ù„Ø§ Ù†Ø­ØªØ§Ø¬ Ù…ÙˆØ§ÙÙ‚Ø© (GDPR)
+    options.MinimumSameSitePolicy = SameSiteMode.Lax;     // âœ… ØºÙŠØ± Ø¥Ù„Ù‰ Lax
+    //options.Secure = CookieSecurePolicy.None;             // âœ… ØºÙŠØ± Ø¥Ù„Ù‰ None (Ù„Ù„ØªØ·ÙˆÙŠØ±)
+    options.Secure = CookieSecurePolicy.Always;
+    options.HttpOnly = HttpOnlyPolicy.Always;
 });
 
+// ============= 3. Ø¨Ø§Ù‚ÙŠ Ø®Ø¯Ù…Ø§ØªÙƒ =============
 builder.Services.AddAuthorization(options =>
 {
     options.AddPolicy("AdminRole", policy => policy.RequireRole(Roles.Admin));
@@ -71,18 +446,14 @@ builder.Services.AddAuthorization(options =>
 
     options.AddPolicy("AdminOrPharmacistRole", policy =>
        policy.RequireAssertion(context =>
-           context.User.IsInRole(Roles.Admin) 
-           || context.User.IsInRole(Roles.Pharmacist)));
-
+           context.User.IsInRole(Roles.Admin) || context.User.IsInRole(Roles.Pharmacist)));
 });
 
-
-
-
+// Authorization Handlers...
 builder.Services.AddAuthorization(options =>
 {
     options.AddPolicy("CanAccessPrescription", policy =>
-    policy.Requirements.Add(new CanAccessPrescriptionRequirement()));
+        policy.Requirements.Add(new CanAccessPrescriptionRequirement()));
 
     options.AddPolicy("CanEditPrescription", policy =>
         policy.Requirements.Add(new CanEditPrescriptionRequirement()));
@@ -90,164 +461,143 @@ builder.Services.AddAuthorization(options =>
     options.AddPolicy("CanDispensePrescription", policy =>
         policy.Requirements.Add(new CanDispensePrescriptionRequirement()));
 
-    // user
-
     options.AddPolicy("CanAccessUser", policy =>
-    policy.Requirements.Add(new CanAccessUserRequirement()));
+        policy.Requirements.Add(new CanAccessUserRequirement()));
 
     options.AddPolicy("CanEditUser", policy =>
         policy.Requirements.Add(new CanEditUserRequirement()));
 
-    // Patient
     options.AddPolicy("CanAccessPatient", policy =>
-    policy.Requirements.Add(new CanAccessPatientRequirement()));
+        policy.Requirements.Add(new CanAccessPatientRequirement()));
 
     options.AddPolicy("CanEditPatient", policy =>
         policy.Requirements.Add(new CanEditPatientRequirement()));
 
-    // Doctor
     options.AddPolicy("CanAccessDoctor", policy =>
-    policy.Requirements.Add(new CanAccessDoctorRequirement()));
+        policy.Requirements.Add(new CanAccessDoctorRequirement()));
 
     options.AddPolicy("CanEditDoctor", policy =>
         policy.Requirements.Add(new CanEditDoctorRequirement()));
 
-    // Pharmacist
     options.AddPolicy("CanAccessPharmacist", policy =>
-    policy.Requirements.Add(new CanAccessPharmacistRequirement()));
+        policy.Requirements.Add(new CanAccessPharmacistRequirement()));
 
     options.AddPolicy("CanEditPharmacist", policy =>
         policy.Requirements.Add(new CanEditPharmacistRequirement()));
 
-    // DispenseRecord
-    options.AddPolicy("CanAccessDispenseRecord",
-    policy => policy.Requirements.Add(new CanAccessDispenseRecordRequirement()));
+    options.AddPolicy("CanAccessDispenseRecord", policy =>
+        policy.Requirements.Add(new CanAccessDispenseRecordRequirement()));
 
-    options.AddPolicy("CanEditDispenseRecord",
-        policy => policy.Requirements.Add(new CanEditDispenseRecordRequirement()));
+    options.AddPolicy("CanEditDispenseRecord", policy =>
+        policy.Requirements.Add(new CanEditDispenseRecordRequirement()));
 });
 
+// Register Handlers...
 builder.Services.AddScoped<IAuthorizationHandler, CanAccessPrescriptionHandler>();
 builder.Services.AddScoped<IAuthorizationHandler, CanEditPrescriptionHandler>();
 builder.Services.AddScoped<IAuthorizationHandler, CanDispensePrescriptionHandler>();
-
-
 builder.Services.AddScoped<IAuthorizationHandler, CanAccessUserHandler>();
 builder.Services.AddScoped<IAuthorizationHandler, CanEditUserHandler>();
-
 builder.Services.AddScoped<IAuthorizationHandler, CanAccessPatientHandler>();
 builder.Services.AddScoped<IAuthorizationHandler, CanEditPatientHandler>();
-
 builder.Services.AddScoped<IAuthorizationHandler, CanAccessDoctorHandler>();
 builder.Services.AddScoped<IAuthorizationHandler, CanEditDoctorHandler>();
-
 builder.Services.AddScoped<IAuthorizationHandler, CanAccessPharmacistHandler>();
 builder.Services.AddScoped<IAuthorizationHandler, CanEditPharmacistHandler>();
-
 builder.Services.AddScoped<IAuthorizationHandler, CanAccessDispenseRecordHandler>();
 builder.Services.AddScoped<IAuthorizationHandler, CanEditDispenseRecordHandler>();
 
-// ÅÖÇİÉ ÇáÎÏãÇÊ
 builder.Services.AddControllers();
-// Add services to the container.
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 
-
-// ÅÚÏÇÏ ÎÏãÇÊ ÇáãÕÇÏŞÉ ÈÇÓÊÎÏÇã JWT
+// ============= 4. Ø¥Ø¹Ø¯Ø§Ø¯Ø§Øª JWT Authentication =============
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
-        
-        options.RequireHttpsMetadata = true;
+        options.RequireHttpsMetadata = true;  // ? Ø¥Ø¬Ø¨Ø§Ø±ÙŠ ÙÙŠ production
 
-        // ÅÚÏÇÏ ãÚáãÇÊ ÇáÊÍŞŞ ãä ÕÍÉ ÇáÊæßä
+        // ? Ø¥Ø¹Ø¯Ø§Ø¯ Ù…Ù‡Ù… Ù„Ø¬Ù„Ø¨ Ø§Ù„ØªÙˆÙƒÙ† Ù…Ù† QueryString Ù„Ù€ SignalR (Ø§Ø®ØªÙŠØ§Ø±ÙŠ)
+        options.Events = new JwtBearerEvents
+        {
+            OnMessageReceived = context =>
+            {
+                var accessToken = context.Request.Query["access_token"];
+                var path = context.HttpContext.Request.Path;
+
+                if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/hubs"))
+                {
+                    context.Token = accessToken;
+                }
+                return Task.CompletedTask;
+            }
+        };
+
         options.TokenValidationParameters = new TokenValidationParameters
         {
-            // ÊÍŞŞ ããÇ ÅĞÇ ßÇä ÇáãõÕÏÑ ááÊæßä ÕÍíÍğÇ
             ValidateIssuer = true,
-            // ÊÍŞŞ ããÇ ÅĞÇ ßÇä ÇáÌãåæÑ ÇáãÓÊåÏİ ááÊæßä ÕÍíÍğÇ
             ValidateAudience = true,
-            // ÊÍŞŞ ããÇ ÅĞÇ ßÇäÊ ÕáÇÍíÉ ÇáÊæßä ŞÏ ÇäÊåÊ
             ValidateLifetime = true,
-            // ÊÍŞŞ ããÇ ÅĞÇ ßÇä ãİÊÇÍ ÇáÊæŞíÚ ÕÍíÍğÇ
             ValidateIssuerSigningKey = true,
-            // ÇáÌåÉ ÇáãÕÏÑÉ ááÊæßä¡ íÊã ÇáÍÕæá ÚáíåÇ ãä ãáİ ÇáÅÚÏÇÏÇÊ
             ValidIssuer = builder.Configuration["Jwt:Issuer"],
-            // ÇáÌãåæÑ ÇáãÓÊåÏİ ÇáĞí íÓÊÎÏã ÇáÊæßä¡ íÊã ÇáÍÕæá Úáíå ãä ãáİ ÇáÅÚÏÇÏÇÊ
             ValidAudience = builder.Configuration["Jwt:Audience"],
-            // ÇáãİÊÇÍ ÇáÓÑí ÇáĞí íÓÊÎÏã áÊæŞíÚ ÇáÊæßä¡ íÊã ÊÍæíáå Åáì ãÕİæİÉ ÈÇíÊ
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"])),
-
-            ClockSkew = TimeSpan.Zero
+            IssuerSigningKey = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!)),
+            ClockSkew = TimeSpan.FromSeconds(30)  // ? 30 Ø«Ø§Ù†ÙŠØ© ÙÙ‚Ø· Ù„Ù„ØªØ³Ø§Ù…Ø­
         };
     });
 
-
-// ÅÖÇİÉ DbContext ÇáÎÇÕ Èß ãÚ ÅÚÏÇÏ ÇáÇÊÕÇá
+// ============= 5. Database & Repositories =============
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-//// ÅÖÇİÉ DbContext ÇáÎÇÕ Èß ãÚ ÅÚÏÇÏ ÇáÇÊÕÇá
-//builder.Services.AddDbContext<WasfatyDbContext>(options =>
-//    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+//  ØªØ³Ø¬ÙŠÙ„ Ø§Ù„Ø¥Ø¹Ø¯Ø§Ø¯Ø§Øª Ù…Ù† appsettings.json
+builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("Jwt"));
+builder.Services.Configure<CookieSettings>(builder.Configuration.GetSection("CookieSettings"));
 
+// Ø£Ùˆ ØªØ³Ø¬ÙŠÙ„Ù‡Ø§ ÙƒÙ€ Singleton Ù„Ù„Ø§Ø³ØªØ®Ø¯Ø§Ù… Ø§Ù„Ù…Ø¨Ø§Ø´Ø±
+builder.Services.AddSingleton(resolver =>
+    resolver.GetRequiredService<IOptions<JwtSettings>>().Value);
+builder.Services.AddSingleton(resolver =>
+    resolver.GetRequiredService<IOptions<CookieSettings>>().Value);
+
+// Register your services...
 builder.Services.AddScoped<IAuthRepository, AuthRepository>();
 builder.Services.AddScoped<IAuthService, AuthService>();
-
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IUserService, UserService>();
-
 builder.Services.AddScoped<IPatientRepository, PatientRepository>();
 builder.Services.AddScoped<IPatientService, PatientService>();
-
 builder.Services.AddScoped<IMedicalCenterRepository, MedicalCenterRepository>();
 builder.Services.AddScoped<IMedicalCenterService, MedicalCenterService>();
-
 builder.Services.AddScoped<IDoctorRepository, DoctorRepository>();
 builder.Services.AddScoped<IDoctorService, DoctorService>();
-
-
 builder.Services.AddScoped<IPharmacyRepository, PharmacyRepository>();
 builder.Services.AddScoped<IPharmacyService, PharmacyService>();
-
-
 builder.Services.AddScoped<IPharmacistRepository, PharmacistRepository>();
 builder.Services.AddScoped<IPharmacistService, PharmacistService>();
-
 builder.Services.AddScoped<IMedicationRepository, MedicationRepository>();
 builder.Services.AddScoped<IMedicationService, MedicationService>();
-
 builder.Services.AddScoped<IPrescriptionRepository, PrescriptionRepository>();
 builder.Services.AddScoped<IPrescriptionService, PrescriptionService>();
-
-
 builder.Services.AddScoped<IPrescriptionItemRepository, PrescriptionItemRepository>();
 builder.Services.AddScoped<IPrescriptionItemService, PrescriptionItemService>();
-
-
 builder.Services.AddScoped<IDispenseRecordRepository, DispenseRecordRepository>();
 builder.Services.AddScoped<IDispenseRecordService, DispenseRecordService>();
-
-
 builder.Services.AddScoped<IAdminRepository, AdminRepository>();
 builder.Services.AddScoped<IAdminService, AdminService>();
-
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+builder.Services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
 
-
+// Email Services
 builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
 builder.Services.AddTransient<IEmailService, EmailService>();
-
-
 builder.Services.Configure<SendGridSettings>(builder.Configuration.GetSection("SendGrid"));
 builder.Services.AddTransient<IEmailService, SendGridEmailService>();
 
-// ÅÖÇİÉ ÎÏãÇÊ Swagger
+// ============= 6. Swagger =============
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
-    // ÊÚÑíİ Security Scheme
     options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         Name = "Authorization",
@@ -258,7 +608,6 @@ builder.Services.AddSwaggerGen(options =>
         Description = "Enter JWT Token like this: Bearer {your token}"
     });
 
-    // ÊØÈíŞå Úáì ßá ÇáÜ APIs
     options.AddSecurityRequirement(new OpenApiSecurityRequirement
     {
         {
@@ -277,7 +626,7 @@ builder.Services.AddSwaggerGen(options =>
 
 var app = builder.Build();
 
-
+// ============= 7. Database Migration =============
 using (var scope = app.Services.CreateScope())
 {
     try
@@ -290,7 +639,6 @@ using (var scope = app.Services.CreateScope())
         }
 
         await ApplicationDbSeeder.SeedAsync(scope.ServiceProvider);
-
         Console.WriteLine("Database migration and seeding completed successfully.");
     }
     catch (Exception ex)
@@ -299,22 +647,18 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
-// Êãßíä Swagger
+// ============= 8. Middleware Pipeline (Ø§Ù„ØªØ±ØªÙŠØ¨ Ù…Ù‡Ù… Ø¬Ø¯Ø§Ù‹!) =============
+
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger();  // ÊÃßÏ ãä Ãä Swagger íÚãá ÈÔßá ÕÍíÍ
-
+    app.UseSwagger();
     app.UseSwaggerUI(c =>
     {
         c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1");
-        c.RoutePrefix = string.Empty; // áÚÑÖ ÇáæÇÌåÉ Úáì ÇáÌĞÑ
+        c.RoutePrefix = string.Empty;
     });
-    app.MapOpenApi(); // ÊÃßÏ ãä Ãäß ÊŞæã ÈÊÔÛíá MapOpenApi åäÇ
-
-
+    app.MapOpenApi();
 }
-
-
 
 if (!app.Environment.IsDevelopment())
 {
@@ -323,14 +667,23 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-var summaries = new[]
-{
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
 
+
+//app.UseCors("AllowFrontend");  // ? Ø§Ø³ØªØ®Ø¯Ù… Ø§Ù„Ø³ÙŠØ§Ø³Ø© Ø§Ù„ØµØ­ÙŠØ­Ø© ÙÙ‚Ø·
+app.UseCors("AllowSpecific");// Ø§Ù„ÙƒÙ„
+
+
+app.UseCookiePolicy();          // ? Ù…Ù‡Ù… Ø¬Ø¯Ø§Ù‹ Ù„Ù„Ù€ Cookies
+app.UseAuthentication();        // ? Ø§Ù„ØªØ­Ù‚Ù‚ Ù…Ù† JWT
+app.UseAuthorization();         // ? Ø§Ù„ØªØ­Ù‚Ù‚ Ù…Ù† Ø§Ù„ØµÙ„Ø§Ø­ÙŠØ§Øª
+
+app.MapControllers();
+
+// Weather endpoint (optional)
 app.MapGet("/weatherforecast", () =>
 {
-    var forecast =  Enumerable.Range(1, 5).Select(index =>
+    var summaries = new[] { "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching" };
+    var forecast = Enumerable.Range(1, 5).Select(index =>
         new WeatherForecast
         (
             DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
@@ -342,14 +695,6 @@ app.MapGet("/weatherforecast", () =>
 })
 .WithName("GetWeatherForecast");
 
-
-// åäÇ¡ ÊÃßÏ ãä Ãäß ÊÓÊÎÏã CORS ÃæáÇğ ŞÈá ÇáãÕÇÏŞÉ æÇáÜ Authorization
-app.UseCors("AllowAll");  // ÊØÈíŞ ÓíÇÓÉ CORS
-
-app.UseAuthentication();
-app.UseAuthorization();
-
-app.MapControllers();
 app.Run();
 
 record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)

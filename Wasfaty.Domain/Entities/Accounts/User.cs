@@ -1,4 +1,6 @@
-﻿public partial class User
+﻿using Wasfaty.Domain.Entities.Accounts;
+
+public partial class User
 {
     public int Id { get; set; }
 
@@ -19,4 +21,6 @@
     public virtual Pharmacist? Pharmacist { get; set; }
 
     public virtual Role Role { get; set; } = null!;
+
+    public ICollection<RefreshToken> RefreshTokens { get; set; } = new List<RefreshToken>();
 }

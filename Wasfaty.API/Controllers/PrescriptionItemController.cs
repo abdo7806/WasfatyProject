@@ -116,21 +116,21 @@ public class PrescriptionItemController : ControllerBase
             return BadRequest("Invalid PrescriptionItem data.");
         }
 
-        var prescription = await _prescriptionService.GetByIdAsync(prescriptionItemDto.PrescriptionId);
+        //var prescription = await _prescriptionService.GetByIdAsync(prescriptionItemDto.PrescriptionId);
 
-        if (prescription == null)
-        {
-            return BadRequest("الوصفه مش موجودة");
+        //if (prescription == null)
+        //{
+        //    return BadRequest("الوصفه مش موجودة");
 
-        }
+        //}
 
        
 
-        var auth = await _authorizationService.AuthorizeAsync(
-    User, prescription, "CanEditPrescription");
+    //    var auth = await _authorizationService.AuthorizeAsync(
+    //User, prescription, "CanEditPrescription");
 
-        if (!auth.Succeeded)
-            return Forbid();
+        //if (!auth.Succeeded)
+        //    return Forbid();
 
         /*var medication = await _medicationService.GetAllAsync();
 

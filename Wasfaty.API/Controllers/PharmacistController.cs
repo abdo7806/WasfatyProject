@@ -84,26 +84,6 @@ public class PharmacistController : ControllerBase
         }
 
 
-        var pharmacists = await _pharmacistService.GetAllAsync();
-
-        if (pharmacists.Any(d => d.UserId == pharmacistDto.UserId))
-        {
-            return BadRequest("هاذا المستخدم صيدلي بالفعل");
-
-        }
-
-        UserDto user = await _userService.GetUserByIdAsync(pharmacistDto.UserId);
-        if (user == null)
-        {
-            return BadRequest("Invalid User data.");
-        }
-
-        if (user.Role != UserRoleEnum.Pharmacist)
-        {
-            return BadRequest("لازم تكون صلاحيات المستخدم صيدلي");
-
-        }
-
         PharmacyDto? pharmacy = await _pharmacyService.GetByIdAsync(pharmacistDto.PharmacyId);
 
         if (pharmacy == null)

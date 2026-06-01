@@ -6,7 +6,15 @@ namespace Wasfaty.Application.DTOs.Doctors
     public class CreateDoctorDto
     {
         [Required]
-        public int UserId { get; set; }
+        public string FullName { get; set; }
+
+        [Required]
+        [EmailAddress]
+        public string Email { get; set; }
+
+        [Required]
+        public string Password { get; set; }
+
         [Required]
         public int MedicalCenterId { get; set; }
         [Required]

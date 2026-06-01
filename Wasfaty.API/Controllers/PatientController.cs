@@ -138,7 +138,7 @@ public class PatientController : ControllerBase
     }
 
     // DELETE: api/patient/{id}
-    [Authorize(Roles = "AdminRole")]
+    [Authorize(Policy = "AdminRole")]
     [HttpDelete("{id}", Name = "DeletePatient")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]

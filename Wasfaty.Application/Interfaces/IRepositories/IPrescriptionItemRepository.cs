@@ -12,4 +12,5 @@ public interface IPrescriptionItemRepository
     Task<PrescriptionItem> AddAsync(PrescriptionItem prescriptionItem);
     Task<PrescriptionItem> UpdateAsync(PrescriptionItem prescriptionItem);
     Task<bool> DeleteAsync(int id);
+    Task DeleteByPrescriptionIdAsync(int prescriptionId);
 }

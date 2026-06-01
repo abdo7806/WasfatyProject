@@ -5,17 +5,21 @@ using Wasfaty.Application.DTOs.Users;
 using Wasfaty.Application.DTOs.Pharmacies;
 using Wasfaty.Application.Interfaces.IServices;
 using Wasfaty.Application.Interfaces.IRepositories;
+using Wasfaty.Application.DTOs.Patients;
 namespace Wasfaty.Application.Services;
 
 public class DoctorService : IDoctorService
 {
     private readonly IDoctorRepository _doctorRepository;
-   
+    private readonly IUnitOfWork _unitOfWork;
+    private readonly IUserRepository _userRepository;
 
-    public DoctorService(IDoctorRepository doctorRepository)
+
+    public DoctorService(IDoctorRepository doctorRepository, IUnitOfWork unitOfWork, IUserRepository userRepository)
     {
         _doctorRepository = doctorRepository;
-        
+        _unitOfWork = unitOfWork;
+        _userRepository = userRepository;
     }
 
     public async Task<IEnumerable<DoctorDto>> GetAllDoctorsAsync()
@@ -86,18 +90,39 @@ public class DoctorService : IDoctorService
 
     public async Task<DoctorDto> CreateDoctorAsync(CreateDoctorDto doctorDto)
     {
-        var doctor = new Doctor
-        {
-            UserId = doctorDto.UserId,
-            MedicalCenterId = doctorDto.MedicalCenterId,
-            Specialization = doctorDto.Specialization,
-            LicenseNumber = doctorDto.LicenseNumber,
-        };
+        // بدء Transaction
+        await _unitOfWork.BeginTransactionAsync();
 
-        Doctor createDoctor = await _doctorRepository.AddAsync(doctor);
-
-        if (createDoctor != null)
+        try
         {
+            var user = new User
+            {
+                FullName = doctorDto.FullName,
+                Email = doctorDto.Email,
+                RoleId = (int)UserRoleEnum.Doctor,
+                CreatedAt = DateTime.UtcNow,
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword(doctorDto.Password)
+            };
+
+            var createdUser = await _userRepository.AddAsync(user);
+            if (createdUser == null) return null;
+
+  
+
+            var doctor = new Doctor
+            {
+                UserId = createdUser.Id,
+                MedicalCenterId = doctorDto.MedicalCenterId,
+                Specialization = doctorDto.Specialization,
+                LicenseNumber = doctorDto.LicenseNumber,
+            };
+
+            var createDoctor = await _doctorRepository.AddAsync(doctor);
+            if (createDoctor == null) return null;
+
+            // كل شيء نجح → نثبت العملية
+            await _unitOfWork.CommitAsync();
+
             return new DoctorDto
             {
                 Id = createDoctor.Id,
@@ -107,7 +132,11 @@ public class DoctorService : IDoctorService
                 LicenseNumber = createDoctor.LicenseNumber,
             };
         }
-
+        catch
+        {
+            // أي خطأ → نلغي كل شيء
+            await _unitOfWork.RollbackAsync();
+        }
 
         return null;
        
@@ -115,27 +144,47 @@ public class DoctorService : IDoctorService
 
     public async Task<DoctorDto> UpdateDoctorAsync(int id, UpdateDoctorDto doctorDto)
     {
-        // احصل على المركز الطبي الحالي
-        Doctor existingDoctor = await _doctorRepository.GetByIdAsync(id);
+        await _unitOfWork.BeginTransactionAsync();
 
-        if (existingDoctor == null)
-            return null;
-
-     //   existingDoctor.UserId = doctorDto.UserId;
-        existingDoctor.MedicalCenterId = doctorDto.MedicalCenterId;
-        existingDoctor.Specialization = doctorDto.Specialization;
-        existingDoctor.LicenseNumber = doctorDto.LicenseNumber;
-
-        await _doctorRepository.UpdateAsync(existingDoctor);
-
-        return new DoctorDto
+        try
         {
-            Id = existingDoctor.Id,
-            UserId = existingDoctor.UserId,
-            MedicalCenterId = existingDoctor.MedicalCenterId,
-            Specialization = existingDoctor.Specialization,
-            LicenseNumber = existingDoctor.LicenseNumber,
-        };
+            var doctor = await _doctorRepository.GetByIdAsync(id);
+            if (doctor == null)
+                return null;
+
+            var user = await _userRepository.GetByIdAsync(doctor.UserId);
+            if (user == null)
+                return null;
+
+            // تحديث بيانات المستخدم
+            user.FullName = doctorDto.FullName;
+            user.Email = doctorDto.Email;
+            var updatedUser = await _userRepository.UpdateAsync(user);
+
+
+            var updatedDoctor = await _doctorRepository.UpdateAsync(doctor);
+
+            updatedDoctor.MedicalCenterId = doctorDto.MedicalCenterId;
+            updatedDoctor.Specialization = doctorDto.Specialization;
+            updatedDoctor.LicenseNumber = doctorDto.LicenseNumber;
+
+            // كل شيء نجح → نثبت العملية
+            await _unitOfWork.CommitAsync();
+
+            return new DoctorDto
+            {
+                Id = updatedDoctor.Id,
+                UserId = updatedDoctor.UserId,
+                MedicalCenterId = updatedDoctor.MedicalCenterId,
+                Specialization = updatedDoctor.Specialization,
+                LicenseNumber = updatedDoctor.LicenseNumber,
+            };
+        }
+        catch
+        {
+            await _unitOfWork.RollbackAsync();
+        }
+        return null;
     }
 
     public async Task<bool> DeleteDoctorAsync(int id)

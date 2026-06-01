@@ -56,4 +56,11 @@ public class PrescriptionItemRepository : IPrescriptionItemRepository
         }
         return false;
     }
+
+    public async Task DeleteByPrescriptionIdAsync(int prescriptionId)
+    {
+        await _context.PrescriptionItems
+            .Where(x => x.PrescriptionId == prescriptionId)
+            .ExecuteDeleteAsync();
+    }
 }

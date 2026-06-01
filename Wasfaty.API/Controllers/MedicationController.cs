@@ -19,7 +19,7 @@ public class MedicationController : ControllerBase
         _medicationService = medicationService;
     }
 
-    [Authorize(Policy = "AdminOrPharmacistRole")]
+    [Authorize(Policy = "AdminOrDoctorRole")]
     // GET: api/medications
     [HttpGet("All", Name = "GetAllMedication")]
     [ProducesResponseType(StatusCodes.Status200OK)]

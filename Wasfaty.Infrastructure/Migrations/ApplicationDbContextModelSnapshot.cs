@@ -50,7 +50,7 @@ namespace Wasfaty.Infrastructure.Migrations
                     b.HasIndex("PrescriptionId")
                         .IsUnique();
 
-                    b.ToTable("DispenseRecords", (string)null);
+                    b.ToTable("DispenseRecords");
                 });
 
             modelBuilder.Entity("Doctor", b =>
@@ -80,7 +80,7 @@ namespace Wasfaty.Infrastructure.Migrations
                     b.HasIndex("UserId")
                         .IsUnique();
 
-                    b.ToTable("Doctors", (string)null);
+                    b.ToTable("Doctors");
                 });
 
             modelBuilder.Entity("MedicalCenter", b =>
@@ -103,7 +103,7 @@ namespace Wasfaty.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("MedicalCenters", (string)null);
+                    b.ToTable("MedicalCenters");
                 });
 
             modelBuilder.Entity("Medication", b =>
@@ -129,7 +129,7 @@ namespace Wasfaty.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Medications", (string)null);
+                    b.ToTable("Medications");
                 });
 
             modelBuilder.Entity("Patient", b =>
@@ -157,7 +157,7 @@ namespace Wasfaty.Infrastructure.Migrations
                     b.HasIndex("UserId")
                         .IsUnique();
 
-                    b.ToTable("Patients", (string)null);
+                    b.ToTable("Patients");
                 });
 
             modelBuilder.Entity("Pharmacist", b =>
@@ -184,7 +184,7 @@ namespace Wasfaty.Infrastructure.Migrations
                     b.HasIndex("UserId")
                         .IsUnique();
 
-                    b.ToTable("Pharmacists", (string)null);
+                    b.ToTable("Pharmacists");
                 });
 
             modelBuilder.Entity("Pharmacy", b =>
@@ -207,7 +207,7 @@ namespace Wasfaty.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Pharmacies", (string)null);
+                    b.ToTable("Pharmacies");
                 });
 
             modelBuilder.Entity("Prescription", b =>
@@ -236,7 +236,7 @@ namespace Wasfaty.Infrastructure.Migrations
 
                     b.HasIndex("PatientId");
 
-                    b.ToTable("Prescriptions", (string)null);
+                    b.ToTable("Prescriptions");
                 });
 
             modelBuilder.Entity("PrescriptionItem", b =>
@@ -280,7 +280,7 @@ namespace Wasfaty.Infrastructure.Migrations
 
                     b.HasIndex("PrescriptionId");
 
-                    b.ToTable("PrescriptionItems", null, t =>
+                    b.ToTable("PrescriptionItems", t =>
                         {
                             t.HasCheckConstraint("CHK_PrescriptionItem_Medication", "([MedicationId] IS NOT NULL OR ([CustomMedicationName] IS NOT NULL AND [CustomMedicationDescription] IS NOT NULL))");
                         });
@@ -300,7 +300,7 @@ namespace Wasfaty.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Roles", (string)null);
+                    b.ToTable("Roles");
                 });
 
             modelBuilder.Entity("User", b =>
@@ -333,7 +333,50 @@ namespace Wasfaty.Infrastructure.Migrations
 
                     b.HasIndex("RoleId");
 
-                    b.ToTable("Users", (string)null);
+                    b.ToTable("Users");
+                });
+
+            modelBuilder.Entity("Wasfaty.Domain.Entities.Accounts.RefreshToken", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("DeviceInfo")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("Expires")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("IpAddress")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsRevoked")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("RevokedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Token")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Token")
+                        .IsUnique();
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("RefreshTokens");
                 });
 
             modelBuilder.Entity("DispenseRecord", b =>
@@ -460,6 +503,17 @@ namespace Wasfaty.Infrastructure.Migrations
                     b.Navigation("Role");
                 });
 
+            modelBuilder.Entity("Wasfaty.Domain.Entities.Accounts.RefreshToken", b =>
+                {
+                    b.HasOne("User", "User")
+                        .WithMany("RefreshTokens")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("Doctor", b =>
                 {
                     b.Navigation("Prescriptions");
@@ -511,6 +565,8 @@ namespace Wasfaty.Infrastructure.Migrations
                     b.Navigation("Patient");
 
                     b.Navigation("Pharmacist");
+
+                    b.Navigation("RefreshTokens");
                 });
 #pragma warning restore 612, 618
         }

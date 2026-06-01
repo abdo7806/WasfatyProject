@@ -5,7 +5,14 @@ namespace Wasfaty.Application.DTOs.Pharmacists
     public class CreatePharmacistDto
     {
         [Required]
-        public int UserId { get; set; }
+        public string FullName { get; set; }
+
+        [Required]
+        [EmailAddress]
+        public string Email { get; set; }
+
+        [Required]
+        public string Password { get; set; }
 
         [Required]
         public int PharmacyId { get; set; } 

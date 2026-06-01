@@ -159,8 +159,8 @@ public class PatientService : IPatientService
         {
             // أي خطأ → نلغي كل شيء
             await _unitOfWork.RollbackAsync();
-            throw;
         }
+        return null;
     }
     public async Task<PatientDto> UpdateAsync(int id, UpdatePatientDto patientDto)
     {
@@ -203,8 +203,9 @@ public class PatientService : IPatientService
         catch
         {
             await _unitOfWork.RollbackAsync();
-            throw;
         }
+        return null;
+
     }
     public async Task<bool> DeleteAsync(int id)
     {
@@ -214,7 +215,6 @@ public class PatientService : IPatientService
     public async Task<List<PatientDto>> SearchPatients(string term)
     {
         List<Patient> Patients = await _patientRepository.SearchPatients(term);
-
 
         return Patients.Select(patient => new PatientDto
         {

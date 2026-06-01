@@ -68,11 +68,7 @@ public class PrescriptionRepository : IPrescriptionRepository
                 }
 
                var prescriptionItems = prescription.PrescriptionItems;
-               /* if(prescriptionItems == null || !prescriptionItems.Any())
-                {
-                    return false; // لا توجد عناصر في الوصفة
-                }*/
-
+            
                 foreach ( var prescriptionItem in prescriptionItems)
                 {
                     if (prescriptionItem != null)

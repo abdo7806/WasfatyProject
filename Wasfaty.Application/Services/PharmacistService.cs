@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Wasfaty.Application.DTOs.DispenseRecords;
+using Wasfaty.Application.DTOs.Doctors;
+using Wasfaty.Application.DTOs.Patients;
 using Wasfaty.Application.DTOs.Pharmacies;
 using Wasfaty.Application.DTOs.Pharmacists;
 using Wasfaty.Application.DTOs.Users;
@@ -16,10 +18,14 @@ namespace Wasfaty.Application.Services;
 public class PharmacistService : IPharmacistService
 {
     private readonly IPharmacistRepository _pharmacistRepository;
+    private readonly IUnitOfWork _unitOfWork;
+    private readonly IUserRepository _userRepository;
 
-    public PharmacistService(IPharmacistRepository pharmacistRepository)
+    public PharmacistService(IPharmacistRepository pharmacistRepository, IUnitOfWork unitOfWork, IUserRepository userRepository)
     {
         _pharmacistRepository = pharmacistRepository;
+        _unitOfWork = unitOfWork;
+        _userRepository = userRepository;
     }
 
     public async Task<PharmacistDto?> GetByIdAsync(int id)
@@ -103,39 +109,104 @@ public class PharmacistService : IPharmacistService
 
     public async Task<PharmacistDto> CreateAsync(CreatePharmacistDto pharmacistDto)
     {
-        var pharmacist = new Pharmacist
-        {
-            UserId = pharmacistDto.UserId,
-            PharmacyId = pharmacistDto.PharmacyId,
-            LicenseNumber = pharmacistDto.LicenseNumber,
-        };
+        await _unitOfWork.BeginTransactionAsync();
 
-        var addedPharmacist = await _pharmacistRepository.AddAsync(pharmacist);
-        return new PharmacistDto
+        try
         {
-            Id = addedPharmacist.Id,
-            UserId = addedPharmacist.UserId,
-            PharmacyId = addedPharmacist.PharmacyId,
-            LicenseNumber = addedPharmacist.LicenseNumber,
-        };
+            var user = new User
+            {
+                FullName = pharmacistDto.FullName,
+                Email = pharmacistDto.Email,
+                RoleId = (int)UserRoleEnum.Pharmacist,
+                CreatedAt = DateTime.UtcNow,
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword(pharmacistDto.Password)
+            };
+
+            var createdUser = await _userRepository.AddAsync(user);
+            if (createdUser == null) return null;
+
+
+
+            var pharmacist = new Pharmacist
+            {
+                UserId = createdUser.Id,
+                PharmacyId = pharmacistDto.PharmacyId,
+                LicenseNumber = pharmacistDto.LicenseNumber,
+            };
+
+            var createPharmacist = await _pharmacistRepository.AddAsync(pharmacist);
+            if (createPharmacist == null) return null;
+
+            // كل شيء نجح → نثبت العملية
+            await _unitOfWork.CommitAsync();
+
+            return new PharmacistDto
+            {
+                Id = createPharmacist.Id,
+                UserId = createPharmacist.UserId,
+                PharmacyId = createPharmacist.PharmacyId,
+                LicenseNumber = createPharmacist.LicenseNumber ?? "",
+            };
+        }
+        catch
+        {
+            // أي خطأ → نلغي كل شيء
+            await _unitOfWork.RollbackAsync();
+        }
+
+        return null;
+
     }
 
     public async Task<PharmacistDto> UpdateAsync(int id, UpdatePharmacistDto pharmacistDto)
     {
-        var existingPharmacist = await _pharmacistRepository.GetByIdAsync(id);
-        if (existingPharmacist == null) return null;
 
-      //  existingPharmacist.UserId = existingPharmacist.UserId;
-        existingPharmacist.LicenseNumber = pharmacistDto.LicenseNumber;
-        existingPharmacist.PharmacyId = pharmacistDto.PharmacyId;
-        Pharmacist Pharmacist  = await _pharmacistRepository.UpdateAsync(existingPharmacist);
-        return new PharmacistDto
+        //var existingPharmacist = await _pharmacistRepository.GetByIdAsync(id);
+        //if (existingPharmacist == null) return null;
+
+        ////  existingPharmacist.UserId = existingPharmacist.UserId;
+        //existingPharmacist.LicenseNumber = pharmacistDto.LicenseNumber;
+        //existingPharmacist.PharmacyId = pharmacistDto.PharmacyId;
+        //Pharmacist Pharmacist = await _pharmacistRepository.UpdateAsync(existingPharmacist);
+
+        await _unitOfWork.BeginTransactionAsync();
+
+        try
         {
-            Id = Pharmacist.Id,
-            UserId = Pharmacist.UserId,
-            PharmacyId = Pharmacist.PharmacyId,
-            LicenseNumber = existingPharmacist.LicenseNumber,
-        };
+            var pharmacist = await _pharmacistRepository.GetByIdAsync(id);
+            if (pharmacist == null)
+                return null;
+
+            var user = await _userRepository.GetByIdAsync(pharmacist.UserId);
+            if (user == null)
+                return null;
+
+            // تحديث بيانات المستخدم
+            user.FullName = pharmacistDto.FullName;
+            user.Email = pharmacistDto.Email;
+            var updatedUser = await _userRepository.UpdateAsync(user);
+
+            // تحديث بيانات المريض
+            pharmacist.LicenseNumber = pharmacistDto.LicenseNumber;
+            pharmacist.PharmacyId = pharmacistDto.PharmacyId;
+            var updatedPatient = await _pharmacistRepository.UpdateAsync(pharmacist);
+
+            // كل شيء نجح → نثبت العملية
+            await _unitOfWork.CommitAsync();
+
+            return new PharmacistDto
+            {
+                Id = pharmacist.Id,
+                UserId = pharmacist.UserId,
+                PharmacyId = pharmacist.PharmacyId,
+                LicenseNumber = pharmacist.LicenseNumber,
+            };
+        }
+        catch
+        {
+            await _unitOfWork.RollbackAsync();
+        }
+        return null;
     }
 
     public async Task<bool> DeleteAsync(int id)

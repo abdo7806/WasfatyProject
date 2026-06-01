@@ -83,27 +83,6 @@ public class DoctorController : ControllerBase
             return BadRequest("Invalid doctor data.");
         }
 
-        var doctors = await _doctorService.GetAllDoctorsAsync();
-
-        if (doctors.Any(d => d.UserId == doctorDto.UserId))
-        {
-            return BadRequest("هاذا المستخدم طبيب بالفعل");
-
-        }
-
-        UserDto user = await _userService.GetUserByIdAsync(doctorDto.UserId);
-        if (user == null)
-        {
-            return BadRequest("Invalid User data.");
-        }
-
-        if (user.Role != UserRoleEnum.Doctor)
-        {
-            return BadRequest("لازم تكون صلاحيات المستخدم طبيب");
-
-        }
-
-
         MedicalCenterDto? medicalCenterDto = await _medicalCenterService.GetByIdAsync(doctorDto.MedicalCenterId);
 
         if (medicalCenterDto == null)

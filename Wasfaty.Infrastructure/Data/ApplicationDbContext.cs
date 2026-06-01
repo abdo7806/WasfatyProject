@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Wasfaty.Domain.Entities.Accounts;
 
 public class ApplicationDbContext : DbContext
 {
@@ -18,9 +19,9 @@ public class ApplicationDbContext : DbContext
     public DbSet<Prescription> Prescriptions { get; set; }
     public DbSet<PrescriptionItem> PrescriptionItems { get; set; }
     public DbSet<DispenseRecord> DispenseRecords { get; set; }
+    public DbSet<RefreshToken> RefreshTokens { get; set; }
 
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options) { }
-
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -46,6 +47,11 @@ public class ApplicationDbContext : DbContext
             .HasOne(u => u.Pharmacist)
             .WithOne(ph => ph.User)
             .HasForeignKey<Pharmacist>(ph => ph.UserId);
+
+        modelBuilder.Entity<User>()
+           .HasMany(u => u.RefreshTokens)
+           .WithOne(rt => rt.User)
+           .HasForeignKey(rt => rt.UserId);
 
         // جدول Doctors
         modelBuilder.Entity<Doctor>()
@@ -80,10 +86,10 @@ public class ApplicationDbContext : DbContext
             .OnDelete(DeleteBehavior.NoAction);
 
         // تكوين القيد CHECK
-        modelBuilder.Entity<PrescriptionItem>()
-            .HasCheckConstraint(
-                "CHK_PrescriptionItem_Medication",
-                "([MedicationId] IS NOT NULL OR ([CustomMedicationName] IS NOT NULL AND [CustomMedicationDescription] IS NOT NULL))");
+        //modelBuilder.Entity<PrescriptionItem>()
+        //    .HasCheckConstraint(
+        //        "CHK_PrescriptionItem_Medication",
+        //        "([MedicationId] IS NOT NULL OR ([CustomMedicationName] IS NOT NULL AND [CustomMedicationDescription] IS NOT NULL))");
 
 
         // جدول DispenseRecords
@@ -116,10 +122,28 @@ public class ApplicationDbContext : DbContext
             .HasForeignKey(ph => ph.PharmacyId);
 
 
-        //foreach (var relationship in modelBuilder.Model.GetEntityTypes()
-        // .SelectMany(e => e.GetForeignKeys()))
-        //{
-        //    relationship.DeleteBehavior = DeleteBehavior.NoAction;
-        //}
+        modelBuilder.Entity<RefreshToken>()
+         .HasIndex(x => x.Token)
+         .IsUnique();
+
+
+
+        foreach (var relationship in modelBuilder.Model.GetEntityTypes()
+         .SelectMany(e => e.GetForeignKeys()))
+        {
+            relationship.DeleteBehavior = DeleteBehavior.NoAction;
+        }
+
+        modelBuilder.Entity<User>()
+      .HasMany(u => u.RefreshTokens)
+      .WithOne(rt => rt.User)
+      .HasForeignKey(rt => rt.UserId)
+      .OnDelete(DeleteBehavior.Cascade);
+
+        // القيد اللي عندك
+        modelBuilder.Entity<PrescriptionItem>()
+            .HasCheckConstraint("CHK_PrescriptionItem_Medication",
+                "([MedicationId] IS NOT NULL OR ([CustomMedicationName] IS NOT NULL AND [CustomMedicationDescription] IS NOT NULL))");
+
     }
 }

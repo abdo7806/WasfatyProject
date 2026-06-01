@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Org.BouncyCastle.Math.EC.Rfc7748;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -23,6 +24,12 @@ namespace Wasfaty.Infrastructure.Repositories
             return await _context.Users.FindAsync(id);
         }
 
+        public async Task<User?> GetByIdWithRoleAsync(int id)
+        {
+            return await _context.Users
+                .Include(u => u.Role)
+                .FirstOrDefaultAsync(u => u.Id == id);
+        }
         public async Task<IEnumerable<UserDto>> GetAllAsync()
         {
             return await _context.Users
@@ -41,8 +48,7 @@ namespace Wasfaty.Infrastructure.Repositories
             try
             {
                 // نتحقق من ان مافي مستخدم بنفس البريد الاكتروني
-                int x = _context.Users.Where(u => u.Email == user.Email).Count();
-                if (x == 0)
+                if (!_context.Users.Any(u => u.Email == user.Email))
                 {
                     await _context.Users.AddAsync(user);
                     await _context.SaveChangesAsync();
@@ -59,11 +65,24 @@ namespace Wasfaty.Infrastructure.Repositories
 
         public async Task<User> UpdateAsync(User user)
         {
-         
-            _context.Users.Update(user);
-            await _context.SaveChangesAsync();
+            try
+            {
+                if (!_context.Users.Any(u => u.Email == user.Email && u.Id != user.Id))
+                {
 
-            return user;
+                    _context.Users.Update(user);
+                    await _context.SaveChangesAsync();
+
+                    return user;
+                }
+                return null;
+
+            }
+            catch (Exception ex)
+            {
+                return null;
+            }
+
         }
 
         public async Task<bool> DeleteAsync(int id)

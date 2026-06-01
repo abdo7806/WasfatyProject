@@ -18,10 +18,15 @@ namespace Wasfaty.Application.Services;
 public class PrescriptionService : IPrescriptionService
 {
     private readonly IPrescriptionRepository _prescriptionRepository;
+    private readonly IPrescriptionItemRepository _prescriptionItemRepository;
 
-    public PrescriptionService(IPrescriptionRepository prescriptionRepository)
+    private readonly IUnitOfWork _unitOfWork;
+
+    public PrescriptionService(IPrescriptionRepository prescriptionRepository, IPrescriptionItemRepository prescriptionItemRepository, IUnitOfWork unitOfWork)
     {
         _prescriptionRepository = prescriptionRepository;
+        _prescriptionItemRepository = prescriptionItemRepository;
+        _unitOfWork = unitOfWork;
     }
 
     public async Task<PrescriptionDto> GetByIdAsync(int id)
@@ -164,51 +169,182 @@ public class PrescriptionService : IPrescriptionService
         }).ToList();
 
     }
-
     public async Task<PrescriptionDto> CreateAsync(CreatePrescriptionDto prescriptionDto)
     {
-        var prescription = new Prescription
+        try
         {
-            DoctorId = prescriptionDto.DoctorId,
-            PatientId = prescriptionDto.PatientId,
-            IssuedDate = prescriptionDto.IssuedDate,
-            IsDispensed = prescriptionDto.IsDispensed,
+            await _unitOfWork.BeginTransactionAsync();
 
-        };
+            var prescription = new Prescription
+            {
+                DoctorId = prescriptionDto.DoctorId,
+                PatientId = prescriptionDto.PatientId,
+                IssuedDate = prescriptionDto.IssuedDate,
+                IsDispensed = prescriptionDto.IsDispensed,
+            };
 
-        var addedPrescription = await _prescriptionRepository.AddAsync(prescription);
-        return new PrescriptionDto
+            var addedPrescription =
+                await _prescriptionRepository.AddAsync(prescription);
+
+            var addedItems = new List<PrescriptionItem>();
+
+            foreach (var prescriptionItemDto in prescriptionDto.PrescriptionItems)
+            {
+                // التحقق من صحة البيانات
+                if (prescriptionItemDto.MedicationId == null &&
+                    (string.IsNullOrWhiteSpace(prescriptionItemDto.CustomMedicationName) ||
+                     string.IsNullOrWhiteSpace(prescriptionItemDto.CustomMedicationDescription)))
+                {
+                    await _unitOfWork.RollbackAsync();
+                    return null;
+                }
+
+                var prescriptionItem = new PrescriptionItem
+                {
+                    PrescriptionId = addedPrescription.Id,
+                    MedicationId = prescriptionItemDto.MedicationId,
+                    CustomMedicationName = prescriptionItemDto.CustomMedicationName,
+                    CustomMedicationDescription = prescriptionItemDto.CustomMedicationDescription,
+                    CustomDosageForm = prescriptionItemDto.CustomDosageForm,
+                    CustomStrength = prescriptionItemDto.CustomStrength,
+                    Dosage = prescriptionItemDto.Dosage,
+                    Frequency = prescriptionItemDto.Frequency,
+                    Duration = prescriptionItemDto.Duration
+                };
+
+                var addedPrescriptionItem =
+                    await _prescriptionItemRepository.AddAsync(prescriptionItem);
+
+                addedItems.Add(addedPrescriptionItem);
+            }
+
+            await _unitOfWork.CommitAsync();
+
+            return new PrescriptionDto
+            {
+                Id = addedPrescription.Id,
+                DoctorId = addedPrescription.DoctorId,
+                PatientId = addedPrescription.PatientId,
+                IssuedDate = addedPrescription.IssuedDate,
+                IsDispensed = addedPrescription.IsDispensed,
+
+                PrescriptionItems = addedItems.Select(pi => new PrescriptionItemDto
+                {
+                    Id = pi.Id,
+                    PrescriptionId = pi.PrescriptionId,
+                    MedicationId = pi.MedicationId,
+                    CustomMedicationName = pi.CustomMedicationName,
+                    CustomMedicationDescription = pi.CustomMedicationDescription,
+                    CustomDosageForm = pi.CustomDosageForm,
+                    CustomStrength = pi.CustomStrength,
+                    Dosage = pi.Dosage,
+                    Frequency = pi.Frequency,
+                    Duration = pi.Duration
+                }).ToList()
+            };
+        }
+        catch
         {
-            Id = addedPrescription.Id,
-            DoctorId = addedPrescription.DoctorId,
-            PatientId = addedPrescription.PatientId,
-            IssuedDate = addedPrescription.IssuedDate,
-            IsDispensed = addedPrescription.IsDispensed,
-        };
+            await _unitOfWork.RollbackAsync();
+            return null;
+        }
     }
-
-    public async Task<PrescriptionDto> UpdateAsync(int id, CreatePrescriptionDto prescriptionDto)
+    public async Task<PrescriptionDto> UpdateAsync
+    (
+        int id,
+        CreatePrescriptionDto prescriptionDto
+    )
     {
-        var existingPrescription = await _prescriptionRepository.GetByIdAsync(id);
-        if (existingPrescription == null) return null;
-
-
-        existingPrescription.DoctorId = prescriptionDto.DoctorId;
-        existingPrescription.PatientId = prescriptionDto.PatientId;
-        existingPrescription.IssuedDate = prescriptionDto.IssuedDate;
-        existingPrescription.IsDispensed = prescriptionDto.IsDispensed;
-
-        Prescription prescription = await _prescriptionRepository.UpdateAsync(existingPrescription);
-        return new PrescriptionDto
+        try
         {
-            Id = prescription.Id,
-            DoctorId = prescription.DoctorId,
-            PatientId = prescription.PatientId,
-            IssuedDate = prescription.IssuedDate,
-            IsDispensed = prescription.IsDispensed,
-        };
-    }
+            await _unitOfWork.BeginTransactionAsync();
 
+            var existingPrescription =
+                await _prescriptionRepository.GetByIdAsync(id);
+
+            if (existingPrescription == null)
+            {
+                await _unitOfWork.RollbackAsync();
+                return null;
+            }
+
+            // تحديث الرأس
+            existingPrescription.DoctorId = prescriptionDto.DoctorId;
+            existingPrescription.PatientId = prescriptionDto.PatientId;
+            existingPrescription.IssuedDate = prescriptionDto.IssuedDate;
+            existingPrescription.IsDispensed = prescriptionDto.IsDispensed;
+
+            var updatedPrescription =
+                await _prescriptionRepository.UpdateAsync(existingPrescription);
+
+            // حذف التفاصيل القديمة
+            await _prescriptionItemRepository
+                .DeleteByPrescriptionIdAsync(updatedPrescription.Id);
+
+            var addedItems = new List<PrescriptionItem>();
+
+            // إضافة التفاصيل الجديدة
+            foreach (var prescriptionItemDto in prescriptionDto.PrescriptionItems)
+            {
+                // التحقق من صحة البيانات
+                if (prescriptionItemDto.MedicationId == null &&
+                    (string.IsNullOrWhiteSpace(prescriptionItemDto.CustomMedicationName) ||
+                     string.IsNullOrWhiteSpace(prescriptionItemDto.CustomMedicationDescription)))
+                {
+                    await _unitOfWork.RollbackAsync();
+                    return null;
+                }
+
+                var prescriptionItem = new PrescriptionItem
+                {
+                    PrescriptionId = updatedPrescription.Id,
+                    MedicationId = prescriptionItemDto.MedicationId,
+                    CustomMedicationName = prescriptionItemDto.CustomMedicationName,
+                    CustomMedicationDescription = prescriptionItemDto.CustomMedicationDescription,
+                    CustomDosageForm = prescriptionItemDto.CustomDosageForm,
+                    CustomStrength = prescriptionItemDto.CustomStrength,
+                    Dosage = prescriptionItemDto.Dosage,
+                    Frequency = prescriptionItemDto.Frequency,
+                    Duration = prescriptionItemDto.Duration
+                };
+
+                var addedPrescriptionItem =
+                    await _prescriptionItemRepository.AddAsync(prescriptionItem);
+
+                addedItems.Add(addedPrescriptionItem);
+            }
+
+            await _unitOfWork.CommitAsync();
+
+            return new PrescriptionDto
+            {
+                Id = updatedPrescription.Id,
+                DoctorId = updatedPrescription.DoctorId,
+                PatientId = updatedPrescription.PatientId,
+                IssuedDate = updatedPrescription.IssuedDate,
+                IsDispensed = updatedPrescription.IsDispensed,
+
+                PrescriptionItems = addedItems.Select(pi => new PrescriptionItemDto
+                {
+                    Id = pi.Id,
+                    PrescriptionId = pi.PrescriptionId,
+                    MedicationId = pi.MedicationId,
+                    CustomMedicationName = pi.CustomMedicationName,
+                    CustomMedicationDescription = pi.CustomMedicationDescription,
+                    CustomDosageForm = pi.CustomDosageForm,
+                    CustomStrength = pi.CustomStrength,
+                    Dosage = pi.Dosage,
+                    Frequency = pi.Frequency,
+                    Duration = pi.Duration
+                }).ToList()
+            };
+        }
+        catch
+        {
+            await _unitOfWork.RollbackAsync();
+            return null;
+        }
+    }
     public async Task<bool> DeleteAsync(int id)
     {
         return await _prescriptionRepository.DeleteAsync(id);

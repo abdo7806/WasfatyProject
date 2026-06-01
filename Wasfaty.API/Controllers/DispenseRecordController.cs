@@ -44,7 +44,7 @@ public class DispenseRecordController : ControllerBase
     {
         var dispenseRecords = await _dispenseRecordService.GetAllAsync();
 
-        if (dispenseRecords == null || !dispenseRecords.Any() || dispenseRecords.Count() == 0)
+        if (!dispenseRecords.Any())
         {
             return NotFound("No dispenseRecords found.");
         }

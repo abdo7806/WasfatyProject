@@ -13,8 +13,6 @@ public class DoctorRepository : IDoctorRepository
 
     public async Task<IEnumerable<Doctor>> GetAllAsync()
     {
-
-
         return await _context.Doctors
             .Include(d => d.MedicalCenter)
             .Include(d => d.User)

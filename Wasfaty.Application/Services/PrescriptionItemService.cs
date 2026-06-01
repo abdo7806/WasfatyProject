@@ -100,7 +100,6 @@ public class PrescriptionItemService : IPrescriptionItemService
             (string.IsNullOrEmpty(prescriptionItemDto.CustomMedicationName) ||
             string.IsNullOrEmpty(prescriptionItemDto.CustomMedicationDescription)))
         {
-            // throw new ArgumentException("يجب إدخال إما دواء موجود أو بيانات دواء مخصص");
             return null;
         }
 
@@ -118,7 +117,7 @@ public class PrescriptionItemService : IPrescriptionItemService
 
         var prescriptionItem = new PrescriptionItem
         {
-            PrescriptionId = prescriptionItemDto.PrescriptionId,
+            //PrescriptionId = prescriptionItemDto.PrescriptionId,
             MedicationId = prescriptionItemDto.MedicationId,
             CustomMedicationName = prescriptionItemDto.CustomMedicationName,
             CustomMedicationDescription = prescriptionItemDto.CustomMedicationDescription,
@@ -130,6 +129,7 @@ public class PrescriptionItemService : IPrescriptionItemService
         };
 
         var addedPrescriptionItem = await _prescriptionItemRepository.AddAsync(prescriptionItem);
+
         return new PrescriptionItemDto
         {
             Id = addedPrescriptionItem.Id,
@@ -141,6 +141,7 @@ public class PrescriptionItemService : IPrescriptionItemService
 
 
         };
+
     }
 
     public async Task<PrescriptionItemDto> UpdateAsync(int id, UpdatePrescriptionItemDto prescriptionItemDto)
