@@ -6,7 +6,10 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using System.Globalization;
+using System.Security.Claims;
 using System.Text;
+using System.Threading.RateLimiting;
 using Wasfaty.API.Authorization;
 using Wasfaty.API.Authorization.DispenseRecordAuthorization.Handlers;
 using Wasfaty.API.Authorization.DispenseRecordAuthorization.Requirements;
@@ -20,6 +23,7 @@ using Wasfaty.API.Authorization.PrescriptionAuthorization.Handlers;
 using Wasfaty.API.Authorization.PrescriptionAuthorization.Requirements;
 using Wasfaty.API.Authorization.UserAuthorization.Handlers;
 using Wasfaty.API.Authorization.UserAuthorization.Requirements;
+using Wasfaty.API.Configurations;
 using Wasfaty.Application.Constants;
 using Wasfaty.Application.Interfaces.IRepositories;
 using Wasfaty.Application.Interfaces.IServices;
@@ -49,9 +53,9 @@ builder.Services.AddCors(options =>
             "https://localhost:5500",
             "http://localhost:57223",
             "https://localhost:57223",
-            "https://localhost:4443",    
+            "https://localhost:4443"
 
-                 "null"  //  أضف هذا للملفات المحلية (HTML)
+                 //"null"  //  أضف هذا للملفات المحلية (HTML)
 
             )
               .AllowAnyMethod()
@@ -72,6 +76,7 @@ builder.Services.Configure<CookiePolicyOptions>(options =>
 // ============= 3. باقي خدماتك =============
 builder.Services.AddAuthorization(options =>
 {
+    // Role-based policies
     options.AddPolicy("AdminRole", policy => policy.RequireRole(Roles.Admin));
     options.AddPolicy("DoctorRole", policy => policy.RequireRole(Roles.Doctor));
     options.AddPolicy("PatientRole", policy => policy.RequireRole(Roles.Patient));
@@ -84,11 +89,10 @@ builder.Services.AddAuthorization(options =>
     options.AddPolicy("AdminOrPharmacistRole", policy =>
        policy.RequireAssertion(context =>
            context.User.IsInRole(Roles.Admin) || context.User.IsInRole(Roles.Pharmacist)));
-});
 
-// Authorization Handlers...
-builder.Services.AddAuthorization(options =>
-{
+
+    // Ownership policies
+
     options.AddPolicy("CanAccessPrescription", policy =>
         policy.Requirements.Add(new CanAccessPrescriptionRequirement()));
 
@@ -147,6 +151,11 @@ builder.Services.AddScoped<IAuthorizationHandler, CanEditDispenseRecordHandler>(
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 
+// تسجيل RateLimitingSettings ليتم استخدامه في الـ OnRejected
+builder.Services.Configure<RateLimitingSettings>(builder.Configuration.GetSection("RateLimiting"));
+builder.Services.AddSingleton(resolver =>
+    resolver.GetRequiredService<IOptions<RateLimitingSettings>>().Value);
+
 // ============= 4. إعدادات JWT Authentication =============
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
@@ -183,7 +192,185 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
-// ============= 5. Database & Repositories =============
+// ============= 5. Rate Limiting (ممتاز) =============
+
+// تحميل الإعدادات من appsettings.json
+var rateLimitingSettings = builder.Configuration.GetSection("RateLimiting").Get<RateLimitingSettings>()
+    ?? new RateLimitingSettings(); // قيم افتراضية إذا لم توجد الإعدادات
+
+
+builder.Services.AddRateLimiter(options =>
+{
+    // ---------------------- 1. سياسة عامة لجميع الـ endpoints ----------------------
+    options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(
+        httpContext =>
+        {
+            var key = httpContext.User.Identity?.IsAuthenticated == true
+               ? httpContext.User.FindFirstValue(ClaimTypes.NameIdentifier)
+               : httpContext.Connection.RemoteIpAddress?.ToString()
+                 ?? "anonymous";
+
+            return RateLimitPartition.GetFixedWindowLimiter(
+                     partitionKey: key,
+                     factory: _ => new FixedWindowRateLimiterOptions
+                     {
+                         PermitLimit = rateLimitingSettings.Global.PermitLimit,
+                         Window = TimeSpan.FromMinutes(rateLimitingSettings.Global.WindowMinutes),
+                         QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+                         QueueLimit = rateLimitingSettings.Global.QueueLimit
+                     });
+        });
+
+    // ---------------------- 2. سياسة شديدة لـ Auth ----------------------
+    options.AddPolicy("StrictAuthPolicy", httpContext =>
+    {
+        var ip = httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+        return RateLimitPartition.GetFixedWindowLimiter(ip, _ => new FixedWindowRateLimiterOptions
+        {
+            PermitLimit = rateLimitingSettings.StrictAuth.PermitLimit,
+            Window = TimeSpan.FromMinutes(rateLimitingSettings.StrictAuth.WindowMinutes),
+            QueueLimit = rateLimitingSettings.StrictAuth.QueueLimit// ? لا نسمح بالانتظار لطلبات Auth الفاشلة
+        });
+    });
+
+    // ---------------------- 3. سياسة متوسطة للعمليات (Create/Update/Delete) ----------------------
+    options.AddPolicy("WriteOperationsPolicy", httpContext =>
+    {
+        var userId = httpContext.User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "anonymous";
+        return RateLimitPartition.GetFixedWindowLimiter(userId, _ => new FixedWindowRateLimiterOptions
+        {
+            //PermitLimit = 50,
+            //Window = TimeSpan.FromMinutes(1)
+
+
+            PermitLimit = rateLimitingSettings.WriteOperations.PermitLimit,
+            Window = TimeSpan.FromMinutes(rateLimitingSettings.WriteOperations.WindowMinutes),
+            QueueLimit = rateLimitingSettings.WriteOperations.QueueLimit
+        });
+    });
+
+    // ---------------------- 4. سياسة للـ Polling (مثل /New/{id}) ----------------------
+    options.AddPolicy("PollingPolicy", httpContext =>
+    {
+        var userId = httpContext.User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "anonymous";
+        return RateLimitPartition.GetSlidingWindowLimiter(userId, _ => new SlidingWindowRateLimiterOptions
+        {
+            //PermitLimit = 15,
+            //Window = TimeSpan.FromMinutes(1),
+            //SegmentsPerWindow = 4  // كل 15 ثانية
+
+            PermitLimit = rateLimitingSettings.Polling.PermitLimit,
+            Window = TimeSpan.FromMinutes(rateLimitingSettings.Polling.WindowMinutes),
+            SegmentsPerWindow = rateLimitingSettings.Polling.SegmentsPerWindow,// تقسيم النافذة إلى 4 أجزاء (كل 15 ثانية)
+            QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+            QueueLimit = 0
+
+        });
+    });
+
+    // ---------------------- 5. سياسة للـ Dashboard (أقل قليلاً) ----------------------
+    options.AddPolicy("DashboardPolicy", httpContext =>
+    {
+        var userId = httpContext.User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "anonymous";
+        return RateLimitPartition.GetFixedWindowLimiter(userId, _ => new FixedWindowRateLimiterOptions
+        {
+            PermitLimit = rateLimitingSettings.Dashboard.PermitLimit,
+            Window = TimeSpan.FromMinutes(rateLimitingSettings.Dashboard.WindowMinutes),
+            QueueLimit = rateLimitingSettings.Dashboard.QueueLimit
+        });
+    });
+
+    // ---------------------- 6. سياسة لـ GetMultipleByIds ----------------------
+    options.AddPolicy("MultipleGetPolicy", httpContext =>
+    {
+        var userId = httpContext.User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "anonymous";
+        return RateLimitPartition.GetConcurrencyLimiter(userId, _ => new ConcurrencyLimiterOptions
+        {
+
+            PermitLimit = rateLimitingSettings.MultipleGet.PermitLimit,// ? 5 طلبات فقط تتزامن في نفس الوقت
+            QueueLimit = rateLimitingSettings.MultipleGet.QueueLimit
+        });
+    });
+
+
+    // ---------------------- 7. تنسيق رسالة الرفض مع Logging و Headers ----------------------
+    options.OnRejected = async (context, token) =>
+    {
+        // إعداد الـ Response الأساسية
+        context.HttpContext.Response.StatusCode = StatusCodes.Status429TooManyRequests;
+        context.HttpContext.Response.ContentType = "application/json";
+
+        // ✅ Logging - تسجيل محاولة التجاوز
+        var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<Program>>();
+
+        var userId = context.HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "anonymous";
+        var ip = context.HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+        var path = context.HttpContext.Request.Path;
+        var method = context.HttpContext.Request.Method;
+
+        logger.LogWarning(
+            "🚨 Rate limit exceeded | UserId: {UserId} | IP: {IP} | {Method} {Path}",
+            userId, ip, method, path);
+
+        // ✅ استخراج RetryAfter من Lease Metadata
+        double retryAfterSeconds = 60; // قيمة افتراضية
+
+        if (context.Lease.TryGetMetadata(MetadataName.RetryAfter, out TimeSpan retryAfter))
+        {
+            retryAfterSeconds = Math.Ceiling(retryAfter.TotalSeconds);
+        }
+
+        // ✅ إضافة Headers للـ Frontend
+        var resetTime = DateTimeOffset.UtcNow.AddSeconds(retryAfterSeconds);
+
+        context.HttpContext.Response.Headers.Append("X-RateLimit-Remaining", "0");
+        context.HttpContext.Response.Headers.Append("X-RateLimit-Reset",
+            resetTime.ToUnixTimeSeconds().ToString());
+        context.HttpContext.Response.Headers.Append("Retry-After",
+            retryAfterSeconds.ToString(NumberFormatInfo.InvariantInfo));
+
+        // ✅ جلب الإعدادات من DI Container
+        var settings = context.HttpContext.RequestServices.GetRequiredService<RateLimitingSettings>();
+
+        // ✅ تحديد الـ Limit حسب الـ Path
+        var currentPath = context.HttpContext.Request.Path.ToString();
+        int limit;
+
+        if (currentPath.Contains("dashboard", StringComparison.OrdinalIgnoreCase))
+        {
+            limit = settings.Dashboard.PermitLimit;
+        }
+        else if (currentPath.Contains("Auth", StringComparison.OrdinalIgnoreCase))
+        {
+            limit = settings.StrictAuth.PermitLimit;
+        }
+        else if (currentPath.Contains("Polling", StringComparison.OrdinalIgnoreCase))
+        {
+            limit = settings.Polling.PermitLimit;
+        }
+        else if (currentPath.Contains("Write", StringComparison.OrdinalIgnoreCase))
+        {
+            limit = settings.WriteOperations.PermitLimit;
+        }
+        else
+        {
+            limit = settings.Global.PermitLimit;
+        }
+
+        context.HttpContext.Response.Headers.Append("X-RateLimit-Limit", limit.ToString());
+
+        // ✅ إرسال الـ Response Body
+        await context.HttpContext.Response.WriteAsJsonAsync(new
+        {
+            status = 429,
+            title = "Too Many Requests",
+            detail = $"لقد تجاوزت الحد المسموح من الطلبات. يرجى المحاولة بعد {retryAfterSeconds} ثانية.",
+            retryAfter = retryAfterSeconds
+        }, token);
+    };
+});
+
+// ============= 6. Database & Repositories =============
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
@@ -231,7 +418,7 @@ builder.Services.AddTransient<IEmailService, EmailService>();
 builder.Services.Configure<SendGridSettings>(builder.Configuration.GetSection("SendGrid"));
 builder.Services.AddTransient<IEmailService, SendGridEmailService>();
 
-// ============= 6. Swagger =============
+// ============= 7. Swagger =============
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
@@ -263,7 +450,7 @@ builder.Services.AddSwaggerGen(options =>
 
 var app = builder.Build();
 
-// ============= 7. Database Migration =============
+// ============= 8. Database Migration =============
 using (var scope = app.Services.CreateScope())
 {
     try
@@ -284,7 +471,7 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
-// ============= 8. Middleware Pipeline (الترتيب مهم جداً!) =============
+// ============= 9. Middleware Pipeline (الترتيب مهم جداً!) =============
 
 if (app.Environment.IsDevelopment())
 {
@@ -313,7 +500,7 @@ app.UseCors("AllowSpecific");// الكل
 app.UseCookiePolicy();          // ? مهم جداً للـ Cookies
 app.UseAuthentication();        // ? التحقق من JWT
 app.UseAuthorization();         // ? التحقق من الصلاحيات
-
+app.UseRateLimiter();  
 app.MapControllers();
 
 // Weather endpoint (optional)
@@ -338,3 +525,4 @@ record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
 {
     public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
 }
+

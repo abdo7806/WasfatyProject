@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Wasfaty.Application.Constants;
 using Wasfaty.Application.DTOs.AdminDto;
 using Wasfaty.Application.Interfaces.IServices;
@@ -20,6 +21,7 @@ namespace Wasfaty.API.Controllers
         }
 
         [HttpGet("dashboard")]
+        [EnableRateLimiting("DashboardPolicy")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<AdminDashboardDto>> GetDashboard()

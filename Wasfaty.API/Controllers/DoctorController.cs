@@ -10,6 +10,7 @@ using Wasfaty.Application.DTOs.MedicalCenters;
 using Wasfaty.Application.Constants;
 using Wasfaty.Application.DTOs.AdminDto;
 using Wasfaty.Application.Interfaces.IServices;
+using Microsoft.AspNetCore.RateLimiting;
 
 [Route("api/[controller]")]
 [ApiController]
@@ -74,6 +75,7 @@ public class DoctorController : ControllerBase
     // POST: api/doctor
     [HttpPost("CreateDoctor")]
     [Authorize(Policy = "AdminRole")]
+    [EnableRateLimiting("WriteOperationsPolicy")]
     [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult> CreateDoctor([FromBody] CreateDoctorDto doctorDto)
@@ -104,6 +106,7 @@ public class DoctorController : ControllerBase
     // PUT: api/doctor/{id}
     [Authorize(Policy = "AdminOrDoctorRole")]
     [HttpPut("{id}", Name = "UpdateDoctor")]
+    [EnableRateLimiting("WriteOperationsPolicy")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -142,6 +145,7 @@ public class DoctorController : ControllerBase
     // DELETE: api/doctor/{id}
     [Authorize(Policy = "AdminRole")]
     [HttpDelete("{id}", Name = "DeleteDoctor")]
+    [EnableRateLimiting("WriteOperationsPolicy")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -204,6 +208,7 @@ public class DoctorController : ControllerBase
 
     [HttpGet("dashboard/{doctorId}")]
     [Authorize]
+    [EnableRateLimiting("DashboardPolicy")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<AdminDashboardDto>> GetDashboard(int doctorId)

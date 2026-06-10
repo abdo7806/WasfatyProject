@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Wasfaty.Application.Constants;
 using Wasfaty.Application.DTOs.Medications;
 using Wasfaty.Application.DTOs.Pharmacies;
@@ -64,6 +65,7 @@ public class MedicationController : ControllerBase
 
     // POST: api/medications
     [HttpPost("CreateMedication")]
+    [EnableRateLimiting("WriteOperationsPolicy")]
     [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<MedicationDto>> CreateMedication([FromBody] CreateMedicationDto medicationDto)
@@ -86,6 +88,7 @@ public class MedicationController : ControllerBase
 
     // PUT: api/medications/{id}
     [HttpPut("{id}", Name = "UpdateMedication")]
+    [EnableRateLimiting("WriteOperationsPolicy")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -109,6 +112,7 @@ public class MedicationController : ControllerBase
 
     // DELETE: api/medications/{id}
     [HttpDelete("{id}", Name = "DeleteMedication")]
+    [EnableRateLimiting("WriteOperationsPolicy")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -144,6 +148,7 @@ public class MedicationController : ControllerBase
 
 
     [HttpGet("GetMultipleByIds")]
+    [EnableRateLimiting("MultipleGetPolicy")]  // Concurrency Limiter
     public async Task<IActionResult> GetMultipleByIds( string ids)
     {
         try

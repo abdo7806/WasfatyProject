@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Wasfaty.Application.Constants;
@@ -57,6 +58,7 @@ public class PharmacyController : ControllerBase
 
     // POST: api/pharmacy
     [HttpPost("CreatePharmacy")]
+    [EnableRateLimiting("WriteOperationsPolicy")]
     [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<PharmacyDto>> CreatePharmacy([FromBody] CreatePharmacyDto pharmacyDto)
@@ -79,6 +81,7 @@ public class PharmacyController : ControllerBase
 
     // PUT: api/pharmacy/{id}
     [HttpPut("{id}", Name = "UpdatePharmacy")]
+    [EnableRateLimiting("WriteOperationsPolicy")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -102,6 +105,7 @@ public class PharmacyController : ControllerBase
 
     // DELETE: api/pharmacy/{id}
     [HttpDelete("{id}", Name = "DeletePharmacy")]
+    [EnableRateLimiting("WriteOperationsPolicy")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]

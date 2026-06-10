@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using System.Security.Claims;
 using Wasfaty.Application.Constants;
 using Wasfaty.Application.DTOs.Doctors;
@@ -107,6 +108,7 @@ public class PrescriptionItemController : ControllerBase
     // POST: api/prescriptionitems
     [Authorize(Policy = "AdminOrDoctorRole")]
     [HttpPost("CreatePrescriptionItem")]
+    [EnableRateLimiting("WriteOperationsPolicy")]
     [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<PrescriptionItemDto>> CreatePrescriptionItem([FromBody] CreatePrescriptionItemDto prescriptionItemDto)
@@ -200,6 +202,7 @@ public class PrescriptionItemController : ControllerBase
     // DELETE: api/prescriptionitems/{id}
     [Authorize(Policy = "AdminOrDoctorRole")]
     [HttpDelete("{id}", Name = "DeletePrescriptionItem")]
+    [EnableRateLimiting("WriteOperationsPolicy")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]

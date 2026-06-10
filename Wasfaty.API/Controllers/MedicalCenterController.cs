@@ -9,6 +9,7 @@ using Wasfaty.Application.DTOs.Users;
 using Wasfaty.Infrastructure.Services;
 using Wasfaty.Application.Constants;
 using Wasfaty.Application.Interfaces.IServices;
+using Microsoft.AspNetCore.RateLimiting;
 
 [Route("api/[controller]")]
 [ApiController]
@@ -63,6 +64,7 @@ public class MedicalCenterController : ControllerBase
 
     // POST: api/medicalcenter
     [HttpPost("CreateMedicalCenter")]
+    [EnableRateLimiting("WriteOperationsPolicy")]
     [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult> CreateMedicalCenter([FromBody] CreateMedicalCenterDto medicalCenterDto)
@@ -86,6 +88,7 @@ public class MedicalCenterController : ControllerBase
 
     // PUT: api/medicalcenter/{id}
     [HttpPut("{id}", Name = "UpdateMedicalCenter")]
+    [EnableRateLimiting("WriteOperationsPolicy")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -108,6 +111,7 @@ public class MedicalCenterController : ControllerBase
 
     // DELETE: api/medicalcenter/{id}
     [HttpDelete("{id}", Name = "DeleteMedicalCenter")]
+    [EnableRateLimiting("WriteOperationsPolicy")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]

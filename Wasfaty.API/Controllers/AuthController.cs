@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.Options;
 using System.Security.Claims;
 using Wasfaty.Application.DTOs.Auth;
@@ -23,6 +24,7 @@ public class AuthController : ControllerBase
     [HttpPost("register")]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [AllowAnonymous]
+    [EnableRateLimiting("StrictAuthPolicy")]
     public async Task<ActionResult> Register([FromBody] RegisterUserDto request)
     {
 
@@ -42,6 +44,7 @@ public class AuthController : ControllerBase
 
     [HttpPost("login")]
     [AllowAnonymous]
+    [EnableRateLimiting("StrictAuthPolicy")]// حماية عالية ضد هجمات القوة العمياء (Brute Force) على نقطة الدخول هذه
     public async Task<IActionResult> Login(LoginRequestDto request)
     {
         if (string.IsNullOrEmpty(request.Email) || string.IsNullOrEmpty(request.Password))
@@ -80,6 +83,7 @@ public class AuthController : ControllerBase
 
     [HttpPost("refresh")]
     [AllowAnonymous]
+    [EnableRateLimiting("StrictAuthPolicy")]
     public async Task<IActionResult> Refresh([FromBody] RefreshTokenRequestDto? request = null)
     {
         //  جلب Refresh Token من الـ Cookie أولاً، ثم من الـ Body
@@ -133,6 +137,7 @@ public class AuthController : ControllerBase
 
     [HttpPost("logout")]
     [Authorize]
+    [EnableRateLimiting("WriteOperationsPolicy")]  // متوسط
     public async Task<IActionResult> Logout([FromBody] RefreshTokenRequestDto? request = null)
     {
         //  جلب Refresh Token من الـ Cookie
@@ -161,6 +166,7 @@ public class AuthController : ControllerBase
 
     [HttpPost("revoke-all")]
     [Authorize]
+    [EnableRateLimiting("WriteOperationsPolicy")]
     public async Task<IActionResult> RevokeAllTokens()
     {
         var userId = GetUserId();
@@ -179,6 +185,7 @@ public class AuthController : ControllerBase
 
     [HttpPost("change-password")]
     [Authorize]
+    [EnableRateLimiting("StrictAuthPolicy")]  // حتى لو مسجل دخول، نحميه
     public async Task<IActionResult> ChangePasswordAsync([FromBody] ChangePasswordDto model)
     {
         // استخراج UserId من التوكن

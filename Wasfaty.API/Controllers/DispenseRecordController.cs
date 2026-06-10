@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using System.Security.Claims;
 using Wasfaty.Application.Constants;
 using Wasfaty.Application.DTOs.DispenseRecords;
@@ -81,6 +82,7 @@ public class DispenseRecordController : ControllerBase
     // POST: api/dispenserecords
     [Authorize(Policy = "AdminOrPharmacistRole")]
     [HttpPost("CreateDispenseRecord")]
+    [EnableRateLimiting("WriteOperationsPolicy")]
     [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<DispenseRecordDto>> CreateDispenseRecord([FromBody] CreateDispenseRecordDto dispenseRecordDto)
@@ -158,6 +160,7 @@ public class DispenseRecordController : ControllerBase
     // PUT: api/dispenserecords/{id}
     [Authorize(Policy = "AdminOrPharmacistRole")]
     [HttpPut("{id}", Name = "UpdateDispenseRecord")]
+    [EnableRateLimiting("WriteOperationsPolicy")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -217,6 +220,7 @@ public class DispenseRecordController : ControllerBase
     // DELETE: api/dispenserecords/{id}
     [Authorize(Policy = "AdminRole")]
     [HttpDelete("{id}", Name = "DeleteDispenseRecord")]
+    [EnableRateLimiting("WriteOperationsPolicy")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> DeleteDispenseRecord(int id)

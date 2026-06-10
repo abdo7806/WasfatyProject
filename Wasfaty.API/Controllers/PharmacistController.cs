@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using System.Numerics;
 using Wasfaty.Application.Constants;
 using Wasfaty.Application.DTOs.Doctors;
@@ -74,6 +75,7 @@ public class PharmacistController : ControllerBase
 
     [Authorize(Policy = "AdminRole")]
     [HttpPost("CreatePharmacist")]
+    [EnableRateLimiting("WriteOperationsPolicy")]
     [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<PharmacistDto>> CreatePharmacist([FromBody] CreatePharmacistDto pharmacistDto)
@@ -104,6 +106,7 @@ public class PharmacistController : ControllerBase
 
     [Authorize(Policy = "AdminOrPharmacistRole")]
     [HttpPut("{id}", Name = "UpdatePharmacist")]
+    [EnableRateLimiting("WriteOperationsPolicy")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -144,6 +147,7 @@ public class PharmacistController : ControllerBase
 
     [Authorize(Policy = "AdminRole")]
     [HttpDelete("{id}", Name = "DeletePharmacist")]
+    [EnableRateLimiting("WriteOperationsPolicy")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -224,6 +228,7 @@ public class PharmacistController : ControllerBase
 
     [Authorize(Policy = "AdminOrPharmacistRole")]
     [HttpGet("stats/{pharmacistId}")]
+    [EnableRateLimiting("DashboardPolicy")]
     public async Task<IActionResult> GetDashboardStats(int pharmacistId)
     {
         var pharmacist = await _pharmacistService.GetByIdAsync(pharmacistId);

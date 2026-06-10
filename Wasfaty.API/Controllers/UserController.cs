@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using System.Security.Claims;
 using Wasfaty.Application.Constants;
 using Wasfaty.Application.DTOs.Users;
@@ -85,6 +86,7 @@ namespace Wasfaty.API.Controllers
         // POST: api/user
         [Authorize(Policy = "AdminRole")]
         [HttpPost(Name = "CreateUser")]
+        [EnableRateLimiting("WriteOperationsPolicy")]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
        // [Authorize(Roles = Roles.Admin)]
@@ -108,6 +110,7 @@ namespace Wasfaty.API.Controllers
         // PUT: api/user/{id}
 
         [HttpPut("{id}", Name = "UpdateUser")]
+        [EnableRateLimiting("WriteOperationsPolicy")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -152,6 +155,7 @@ namespace Wasfaty.API.Controllers
         // DELETE: api/user/{id}
         [Authorize(Policy = "AdminRole")]
         [HttpDelete("{id}", Name = "DeleteUser")]
+        [EnableRateLimiting("WriteOperationsPolicy")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]

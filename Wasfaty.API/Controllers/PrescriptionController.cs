@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using System.Data;
 using System.Numerics;
@@ -89,6 +90,7 @@ public class PrescriptionController : ControllerBase
     // POST: api/prescriptions
     [Authorize(Policy = "AdminOrDoctorRole")]
     [HttpPost("CreatePrescription")]
+    [EnableRateLimiting("WriteOperationsPolicy")]
     [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<PrescriptionDto>> CreatePrescription([FromBody] CreatePrescriptionDto prescriptionDto)
@@ -133,6 +135,7 @@ public class PrescriptionController : ControllerBase
     // PUT: api/prescriptions/{id}
     [Authorize(Policy = "AdminOrDoctorRole")]
     [HttpPut("{id}", Name = "UpdatePrescription")]
+    [EnableRateLimiting("WriteOperationsPolicy")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -176,6 +179,7 @@ public class PrescriptionController : ControllerBase
     // DELETE: api/prescriptions/{id}
     [Authorize(Policy = "AdminOrDoctorRole")]
     [HttpDelete("{id}", Name = "DeletePrescription")]
+    [EnableRateLimiting("WriteOperationsPolicy")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -220,6 +224,7 @@ public class PrescriptionController : ControllerBase
     //وضع علامة على أنه تم صرفه
     // PUT: api/dispenserecords/{id}
     [HttpPut("MarkAsDispensed/{id}")]
+    [EnableRateLimiting("WriteOperationsPolicy")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -302,6 +307,7 @@ public class PrescriptionController : ControllerBase
     //}
 
     [HttpGet("MyPrescriptions")]
+    [EnableRateLimiting("WriteOperationsPolicy")]
     public async Task<ActionResult<List<PrescriptionDto>>> GetMyPrescriptions()
     {
         var userId = GetUserId();
@@ -359,8 +365,8 @@ public class PrescriptionController : ControllerBase
     //}
 
     [Authorize(Policy = "AdminRole")]
-
     [HttpGet("dashboard")]
+    [EnableRateLimiting("DashboardPolicy")]
     public async Task<IActionResult> GetDashboardData()
     {
         try
@@ -388,6 +394,7 @@ public class PrescriptionController : ControllerBase
     // GET: api/prescriptions
     [Authorize(Policy = "AdminOrPharmacistRole")]
     [HttpGet("Pending", Name = "GetAllPrescriptionPending")]
+    [EnableRateLimiting("DashboardPolicy")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<List<PrescriptionDto>>> GetAllPrescriptionPending()
@@ -407,6 +414,7 @@ public class PrescriptionController : ControllerBase
     // الحصول على وصفات جديدة منذ آخر معرف
     [HttpGet("New/{lastPrescriptionId}")]
     [Authorize(Policy = "AdminOrDoctorRole")]
+    [EnableRateLimiting("PollingPolicy")]
     public async Task<IActionResult> GetNewPrescriptions(int lastPrescriptionId)
     {
 
