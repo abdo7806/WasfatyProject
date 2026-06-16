@@ -21,12 +21,16 @@ public class PrescriptionService : IPrescriptionService
     private readonly IPrescriptionItemRepository _prescriptionItemRepository;
 
     private readonly IUnitOfWork _unitOfWork;
-
-    public PrescriptionService(IPrescriptionRepository prescriptionRepository, IPrescriptionItemRepository prescriptionItemRepository, IUnitOfWork unitOfWork)
+    private readonly IAuditService _auditService;
+    public PrescriptionService(IPrescriptionRepository prescriptionRepository, 
+        IPrescriptionItemRepository prescriptionItemRepository, 
+        IUnitOfWork unitOfWork,
+        IAuditService auditService)
     {
         _prescriptionRepository = prescriptionRepository;
         _prescriptionItemRepository = prescriptionItemRepository;
         _unitOfWork = unitOfWork;
+        _auditService = auditService;
     }
 
     public async Task<PrescriptionDto> GetByIdAsync(int id)
@@ -196,6 +200,13 @@ public class PrescriptionService : IPrescriptionService
                      string.IsNullOrWhiteSpace(prescriptionItemDto.CustomMedicationDescription)))
                 {
                     await _unitOfWork.RollbackAsync();
+
+                    // ← تسجيل فشل إنشاء الوصفة
+                    await _auditService.LogAsync(
+                        action: "CreatePrescriptionFailed",
+                        entityName: "Prescription",
+                        details: $"Failed to create prescription - Invalid medication data for PatientId: {prescriptionDto.PatientId}");
+
                     return null;
                 }
 
@@ -220,6 +231,14 @@ public class PrescriptionService : IPrescriptionService
 
             await _unitOfWork.CommitAsync();
 
+            // ← تسجيل نجاح إنشاء الوصفة
+            await _auditService.LogAsync(
+                action: "CreatePrescription",
+                entityName: "Prescription",
+                entityId: addedPrescription.Id.ToString(),
+                details: $"Prescription created for PatientId: {prescriptionDto.PatientId} with {prescriptionDto.PrescriptionItems?.Count ?? 0} items");
+
+
             return new PrescriptionDto
             {
                 Id = addedPrescription.Id,
@@ -243,9 +262,16 @@ public class PrescriptionService : IPrescriptionService
                 }).ToList()
             };
         }
-        catch
+        catch(Exception ex )
         {
             await _unitOfWork.RollbackAsync();
+
+            // ← تسجيل خطأ في الإنشاء
+            await _auditService.LogAsync(
+                action: "CreatePrescriptionError",
+                entityName: "Prescription",
+                details: $"Error creating prescription for PatientId: {prescriptionDto.PatientId} - Error: {ex.Message}");
+
             return null;
         }
     }
@@ -265,8 +291,22 @@ public class PrescriptionService : IPrescriptionService
             if (existingPrescription == null)
             {
                 await _unitOfWork.RollbackAsync();
+
+                // ← تسجيل فشل التحديث (الوصفة غير موجودة)
+                await _auditService.LogAsync(
+                    action: "UpdatePrescriptionFailed",
+                    entityName: "Prescription",
+                    entityId: id.ToString(),
+                    details: $"Failed to update prescription - Prescription with ID {id} not found");
+
                 return null;
             }
+
+            // حفظ القيم القديمة للتسجيل
+            var oldDoctorId = existingPrescription.DoctorId;
+            var oldPatientId = existingPrescription.PatientId;
+            var oldIsDispensed = existingPrescription.IsDispensed;
+
 
             // تحديث الرأس
             existingPrescription.DoctorId = prescriptionDto.DoctorId;
@@ -292,8 +332,29 @@ public class PrescriptionService : IPrescriptionService
                      string.IsNullOrWhiteSpace(prescriptionItemDto.CustomMedicationDescription)))
                 {
                     await _unitOfWork.RollbackAsync();
+
+                    // ← تسجيل فشل التحديث (بيانات غير صالحة)
+                    await _auditService.LogAsync(
+                        action: "UpdatePrescriptionFailed",
+                        entityName: "Prescription",
+                        entityId: id.ToString(),
+                        details: $"Failed to update prescription - Invalid medication data");
+
                     return null;
                 }
+
+                // ← تسجيل نجاح التحديث
+                var changes = new List<string>();
+                if (oldDoctorId != prescriptionDto.DoctorId) changes.Add($"DoctorId: {oldDoctorId} -> {prescriptionDto.DoctorId}");
+                if (oldPatientId != prescriptionDto.PatientId) changes.Add($"PatientId: {oldPatientId} -> {prescriptionDto.PatientId}");
+                if (oldIsDispensed != prescriptionDto.IsDispensed) changes.Add($"IsDispensed: {oldIsDispensed} -> {prescriptionDto.IsDispensed}");
+
+                await _auditService.LogAsync(
+                    action: "UpdatePrescription",
+                    entityName: "Prescription",
+                    entityId: id.ToString(),
+                    details: $"Prescription updated. Changes: {(changes.Any() ? string.Join(", ", changes) : "No changes to main fields, items updated")}");
+
 
                 var prescriptionItem = new PrescriptionItem
                 {
@@ -339,17 +400,52 @@ public class PrescriptionService : IPrescriptionService
                 }).ToList()
             };
         }
-        catch
+        catch(Exception ex) 
         {
             await _unitOfWork.RollbackAsync();
+
+
+            // ← تسجيل خطأ في التحديث
+            await _auditService.LogAsync(
+                action: "UpdatePrescriptionError",
+                entityName: "Prescription",
+                entityId: id.ToString(),
+                details: $"Error updating prescription ID {id} - Error: {ex.Message}");
+
             return null;
         }
     }
+   
     public async Task<bool> DeleteAsync(int id)
     {
-        return await _prescriptionRepository.DeleteAsync(id);
-    }
+        var prescription = await _prescriptionRepository.GetByIdAsync(id);
 
+        if (prescription == null)
+        {
+            // ← تسجيل فشل الحذف (الوصفة غير موجودة)
+            await _auditService.LogAsync(
+                action: "DeletePrescriptionFailed",
+                entityName: "Prescription",
+                entityId: id.ToString(),
+                details: $"Failed to delete prescription - Prescription with ID {id} not found");
+
+            return false;
+        }
+
+        var result = await _prescriptionRepository.DeleteAsync(id);
+
+        if (result)
+        {
+            // ← تسجيل نجاح الحذف
+            await _auditService.LogAsync(
+                action: "DeletePrescription",
+                entityName: "Prescription",
+                entityId: id.ToString(),
+                details: $"Prescription deleted successfully for PatientId: {prescription.PatientId}");
+        }
+
+        return result;
+    }
     public async Task<List<PrescriptionDto>> GetByDoctorIdAsync(int doctorId)
     {
         var prescriptions = await _prescriptionRepository.GetByDoctorIdAsync(doctorId);

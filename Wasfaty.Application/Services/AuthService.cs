@@ -24,14 +24,16 @@ public class AuthService : IAuthService
     private readonly IRefreshTokenRepository _refreshTokenRepo;
 
     private readonly IOptions<JwtSettings> _jwtSettings;  
-    private readonly IOptions<CookieSettings> _cookieSettings;  
+    private readonly IOptions<CookieSettings> _cookieSettings;
+    private readonly IAuditService _auditService;  
+
     public AuthService(
         IAuthRepository authRepository, 
         IConfiguration configuration, 
         IUserRepository userRepository, 
         IRefreshTokenRepository refreshTokenRepo,
           IOptions<JwtSettings> jwtSettings,     
-        IOptions<CookieSettings> cookieSettings)
+        IOptions<CookieSettings> cookieSettings, IAuditService auditService)
     {
         _authRepository = authRepository;
         _configuration = configuration;
@@ -39,6 +41,8 @@ public class AuthService : IAuthService
         _refreshTokenRepo = refreshTokenRepo;
         _jwtSettings = jwtSettings;
         _cookieSettings = cookieSettings;
+        _auditService = auditService;  
+
     }
 
     //  5. تغيير كلمة المرور
@@ -47,10 +51,31 @@ public class AuthService : IAuthService
         var user = await _userRepository.GetByIdAsync(userId);
 
         if (user == null || !VerifyPassword(user, currentPassword))
+        {
+            //  تسجيل فشل تغيير كلمة المرور
+            await _auditService.LogAsync(
+                action: "ChangePasswordFailed",
+                entityName: "User",
+                entityId: userId.ToString(),
+                details: $"Failed password change attempt for user ID: {userId}");
+
             return false;
+        }
 
         user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(newPassword);
-        return await _authRepository.ChangeUserPassword(user);
+        var result = await _authRepository.ChangeUserPassword(user);
+
+        // ← تسجيل نجاح تغيير كلمة المرور
+        if (result)
+        {
+            await _auditService.LogAsync(
+                action: "ChangePassword",
+                entityName: "User",
+                entityId: userId.ToString(),
+                details: "User password changed successfully");
+        }
+
+        return result;
     }
 
  
@@ -64,6 +89,12 @@ public class AuthService : IAuthService
 
         if (user == null || !BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash))
         {
+            // تسجيل فشل الدخول
+            await _auditService.LogAsync(
+                action: "LoginFailed",
+                entityName: "User",
+                details: $"Failed login attempt for email: {request.Email} from IP: {ipAddress}");
+
             return (null, null);
         }
 
@@ -102,6 +133,13 @@ public class AuthService : IAuthService
             ExpiresIn = accessTokenLifetimeMinutes * 60  // تحويل إلى ثواني
         };
 
+        //  تسجيل نجاح الدخول
+        await _auditService.LogAsync(
+            action: "LoginSuccess",
+            entityName: "User",
+            entityId: user.Id.ToString(),
+            details: $"User {request.Email} logged in successfully from IP: {ipAddress} on device: {deviceInfo}");
+
         return (result, refreshToken);
     }
 
@@ -109,7 +147,15 @@ public class AuthService : IAuthService
     {
         var existingUser = await _authRepository.GetByEmailAsync(request.Email);
         if (existingUser != null)// اسم المستخدم موجود بالفعل
+        {
+            //  تسجيل محاولة تسجيل فاشلة (بريد موجود)
+            await _auditService.LogAsync(
+                action: "RegisterFailed",
+                entityName: "User",
+                details: $"Failed registration attempt - Email already exists: {request.Email}");
+
             return null;
+        }
 
         var user = new User
         {
@@ -122,8 +168,14 @@ public class AuthService : IAuthService
 
         var createdUser = await _authRepository.CreateAsync(user);
 
-     
-      //  var createPatientDto = await 
+
+
+        //  تسجيل نجاح التسجيل
+        await _auditService.LogAsync(
+            action: "Register",
+            entityName: "User",
+            entityId: createdUser.Id.ToString(),
+            details: $"New user registered: {request.Email}, Name: {request.FullName}");
 
         return new UserDto
         {
@@ -141,7 +193,15 @@ public class AuthService : IAuthService
         var storedToken = await _refreshTokenRepo.GetByTokenAsync(refreshToken);
 
         if (storedToken == null || !storedToken.IsActive)
+        {
+            // ← تسجيل فشل تجديد التوكن
+            await _auditService.LogAsync(
+                action: "RefreshTokenFailed",
+                entityName: "User",
+                details: $"Failed refresh token attempt - Token: {refreshToken?[..10]}...");
+
             return (null, null);
+        }
 
         var user = await _userRepository.GetByIdWithRoleAsync(storedToken.UserId);
         if (user == null)
@@ -177,6 +237,14 @@ public class AuthService : IAuthService
 
         var accessTokenLifetimeMinutes = _jwtSettings.Value.AccessTokenLifetimeInMinutes;
 
+        // ← تسجيل نجاح تجديد التوكن
+        await _auditService.LogAsync(
+            action: "RefreshToken",
+            entityName: "User",
+            entityId: user.Id.ToString(),
+            details: $"Token refreshed successfully for user ID: {user.Id}");
+
+
         //  إرجاع Access Token فقط (Read refresh token سيتم إعادته في Cookie)
         var result = new RefreshTokenResponseDto
         {
@@ -196,6 +264,14 @@ public class AuthService : IAuthService
         token.IsRevoked = true;
         token.RevokedAt = DateTime.UtcNow;
         await _refreshTokenRepo.UpdateAsync(token);
+
+        // تسجيل الخروج
+        await _auditService.LogAsync(
+            action: "Logout",
+            entityName: "User",
+            entityId: userId.ToString(),
+            details: $"User logged out from device: {token.DeviceInfo}");
+
 
         return true;
     }

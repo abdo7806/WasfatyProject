@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Wasfaty.Domain.Entities.Accounts;
+using Wasfaty.Domain.Entities.Audit;
 
 public class ApplicationDbContext : DbContext
 {
@@ -20,6 +21,7 @@ public class ApplicationDbContext : DbContext
     public DbSet<PrescriptionItem> PrescriptionItems { get; set; }
     public DbSet<DispenseRecord> DispenseRecords { get; set; }
     public DbSet<RefreshToken> RefreshTokens { get; set; }
+    public DbSet<AuditLog> AuditLogs { get; set; }
 
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options) { }
     protected override void OnModelCreating(ModelBuilder modelBuilder)

@@ -14,10 +14,12 @@ public class PrescriptionItemService : IPrescriptionItemService
 {
     private readonly IPrescriptionItemRepository _prescriptionItemRepository;
     private readonly IMedicationRepository _medicationRepository;
-    public PrescriptionItemService(IPrescriptionItemRepository prescriptionItemRepository, IMedicationRepository medicationRepository)
+    private readonly IAuditService _auditService;
+    public PrescriptionItemService(IPrescriptionItemRepository prescriptionItemRepository, IMedicationRepository medicationRepository, IAuditService auditService)
     {
         _prescriptionItemRepository = prescriptionItemRepository;
         _medicationRepository = medicationRepository;
+        _auditService = auditService;
     }
 
 
@@ -100,6 +102,12 @@ public class PrescriptionItemService : IPrescriptionItemService
             (string.IsNullOrEmpty(prescriptionItemDto.CustomMedicationName) ||
             string.IsNullOrEmpty(prescriptionItemDto.CustomMedicationDescription)))
         {
+            // ← تسجيل فشل الإنشاء (بيانات غير صالحة)
+            await _auditService.LogAsync(
+                action: "CreatePrescriptionItemFailed",
+                entityName: "PrescriptionItem",
+                details: $"Failed to create PrescriptionItem - Invalid data: No MedicationId and missing custom medication info");
+
             return null;
         }
 
@@ -109,7 +117,13 @@ public class PrescriptionItemService : IPrescriptionItemService
             var medicationExists = await _medicationRepository.GetAllAsync();
             if (medicationExists == null)
             {
-               // throw new KeyNotFoundException("الدواء المحدد غير موجود");
+                // ← تسجيل فشل الإنشاء (دواء غير موجود)
+                await _auditService.LogAsync(
+                    action: "CreatePrescriptionItemFailed",
+                    entityName: "PrescriptionItem",
+                    details: $"Failed to create PrescriptionItem - Medication with ID {prescriptionItemDto.MedicationId} not found");
+
+
                 return null;
 
             }
@@ -129,6 +143,15 @@ public class PrescriptionItemService : IPrescriptionItemService
         };
 
         var addedPrescriptionItem = await _prescriptionItemRepository.AddAsync(prescriptionItem);
+
+        // ← تسجيل نجاح الإنشاء
+        await _auditService.LogAsync(
+            action: "CreatePrescriptionItem",
+            entityName: "PrescriptionItem",
+            entityId: addedPrescriptionItem.Id.ToString(),
+            details: $"PrescriptionItem created for PrescriptionId: {addedPrescriptionItem.PrescriptionId} - " +
+                     $"MedicationId: {prescriptionItemDto.MedicationId ?? 0}, " +
+                     $"CustomMedication: {prescriptionItemDto.CustomMedicationName ?? "None"}");
 
         return new PrescriptionItemDto
         {
@@ -154,7 +177,13 @@ public class PrescriptionItemService : IPrescriptionItemService
             (string.IsNullOrEmpty(prescriptionItemDto.CustomMedicationName) ||
             string.IsNullOrEmpty(prescriptionItemDto.CustomMedicationDescription)))
         {
-            // throw new ArgumentException("يجب إدخال إما دواء موجود أو بيانات دواء مخصص");
+            // ← تسجيل فشل التحديث (العنصر غير موجود)
+            await _auditService.LogAsync(
+                action: "UpdatePrescriptionItemFailed",
+                entityName: "PrescriptionItem",
+                entityId: id.ToString(),
+                details: $"Failed to update PrescriptionItem - Item with ID {id} not found");
+        
             return null;
         }
 
@@ -164,11 +193,19 @@ public class PrescriptionItemService : IPrescriptionItemService
             var medicationExists = await _medicationRepository.GetByIdAsync(prescriptionItemDto.MedicationId ?? 0);
             if (medicationExists == null)
             {
+                await _auditService.LogAsync(
+                         action: "UpdatePrescriptionItemFailed",
+                         entityName: "PrescriptionItem",
+                         entityId: id.ToString(),
+                         details: $"Failed to update PrescriptionItem ID {id} - Medication with ID {prescriptionItemDto.MedicationId} not found");
                 throw new KeyNotFoundException("الدواء المحدد غير موجود");
             }
         }
 
-
+        // حفظ القيم القديمة للتسجيل
+        var oldMedicationId = existingPrescriptionItem.MedicationId;
+        var oldCustomName = existingPrescriptionItem.CustomMedicationName;
+        var oldDosage = existingPrescriptionItem.Dosage;
 
 
         existingPrescriptionItem.MedicationId = prescriptionItemDto.MedicationId;
@@ -181,6 +218,24 @@ public class PrescriptionItemService : IPrescriptionItemService
         existingPrescriptionItem.Duration = prescriptionItemDto.Duration;
 
         PrescriptionItem PrescriptionItem = await _prescriptionItemRepository.UpdateAsync(existingPrescriptionItem);
+
+
+        // ← تسجيل نجاح التحديث
+        var changes = new List<string>();
+        if (oldMedicationId != prescriptionItemDto.MedicationId)
+            changes.Add($"MedicationId: {oldMedicationId} -> {prescriptionItemDto.MedicationId}");
+        if (oldCustomName != prescriptionItemDto.CustomMedicationName)
+            changes.Add($"CustomMedicationName: {oldCustomName} -> {prescriptionItemDto.CustomMedicationName}");
+        if (oldDosage != prescriptionItemDto.Dosage)
+            changes.Add($"Dosage: {oldDosage} -> {prescriptionItemDto.Dosage}");
+
+        await _auditService.LogAsync(
+            action: "UpdatePrescriptionItem",
+            entityName: "PrescriptionItem",
+            entityId: id.ToString(),
+            details: $"PrescriptionItem updated. Changes: {(changes.Any() ? string.Join(", ", changes) : "No significant changes")}");
+
+
         return new PrescriptionItemDto
         {
             Id = PrescriptionItem.Id,
@@ -194,7 +249,33 @@ public class PrescriptionItemService : IPrescriptionItemService
 
     public async Task<bool> DeleteAsync(int id)
     {
-        return await _prescriptionItemRepository.DeleteAsync(id);
+        var existingItem = await _prescriptionItemRepository.GetByIdAsync(id);
+
+        if (existingItem == null)
+        {
+            // ← تسجيل فشل الحذف (العنصر غير موجود)
+            await _auditService.LogAsync(
+                action: "DeletePrescriptionItemFailed",
+                entityName: "PrescriptionItem",
+                entityId: id.ToString(),
+                details: $"Failed to delete PrescriptionItem - Item with ID {id} not found");
+
+            return false;
+        }
+
+        var result = await _prescriptionItemRepository.DeleteAsync(id);
+
+        if (result)
+        {
+            // ← تسجيل نجاح الحذف
+            await _auditService.LogAsync(
+                action: "DeletePrescriptionItem",
+                entityName: "PrescriptionItem",
+                entityId: id.ToString(),
+                details: $"PrescriptionItem deleted successfully - PrescriptionId: {existingItem.PrescriptionId}");
+        }
+
+        return result;
     }
 
     public async Task<List<PrescriptionItemDto>> GetAllByPrescriptionId(int prescriptionId)

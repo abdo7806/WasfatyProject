@@ -18,11 +18,15 @@ public class DispenseRecordService : IDispenseRecordService
 {
     private readonly IDispenseRecordRepository _dispenseRecordRepository;
     private readonly IPrescriptionRepository _prescriptionRepository;
+    private readonly IAuditService _auditService;
 
-    public DispenseRecordService(IDispenseRecordRepository dispenseRecordRepository, IPrescriptionRepository prescriptionRepository)
+    public DispenseRecordService(IDispenseRecordRepository dispenseRecordRepository,
+        IPrescriptionRepository prescriptionRepository,
+        IAuditService auditService)
     {
         _dispenseRecordRepository = dispenseRecordRepository;
         _prescriptionRepository = prescriptionRepository;
+        _auditService = auditService;
     }
 
     public async Task<DispenseRecordDto?> GetByIdAsync(int id)
@@ -243,9 +247,29 @@ public class DispenseRecordService : IDispenseRecordService
     {
 
         var existingPrescription = await _prescriptionRepository.GetByIdAsync(dispenseRecordDto.PrescriptionId);
-        if (existingPrescription == null) return null;
 
+        if (existingPrescription == null)
+        {
+            // ← تسجيل فشل الإنشاء (الوصفة غير موجودة)
+            await _auditService.LogAsync(
+                action: "CreateDispenseRecordFailed",
+                entityName: "DispenseRecord",
+                details: $"Failed to create DispenseRecord - Prescription with ID {dispenseRecordDto.PrescriptionId} not found");
 
+            return null;
+        }
+
+        // التحقق من أن الوصفة لم تصرف بعد
+        if (existingPrescription.IsDispensed)
+        {
+            // ← تسجيل فشل الإنشاء (الوصفة مصروفة مسبقاً)
+            await _auditService.LogAsync(
+                action: "CreateDispenseRecordFailed",
+                entityName: "DispenseRecord",
+                details: $"Failed to create DispenseRecord - Prescription ID {dispenseRecordDto.PrescriptionId} is already dispensed");
+
+            return null;
+        }
 
         var dispenseRecord = new DispenseRecord
         {
@@ -258,8 +282,29 @@ public class DispenseRecordService : IDispenseRecordService
         var addedDispenseRecord = await _dispenseRecordRepository.AddAsync(dispenseRecord, existingPrescription);
         if(addedDispenseRecord == null)
         {
+            // ← تسجيل فشل الإنشاء (خطأ في الـ Repository)
+            await _auditService.LogAsync(
+                action: "CreateDispenseRecordFailed",
+                entityName: "DispenseRecord",
+                details: $"Failed to create DispenseRecord - Repository returned null for PrescriptionId: {dispenseRecordDto.PrescriptionId}");
+
             return null;
         }
+
+        // ← تسجيل نجاح الإنشاء (صرف الدواء)
+        await _auditService.LogAsync(
+            action: "DispensePrescription",
+            entityName: "Prescription",
+            entityId: dispenseRecordDto.PrescriptionId.ToString(),
+            details: $"Prescription dispensed successfully - PharmacistId: {dispenseRecordDto.PharmacistId}, PharmacyId: {dispenseRecordDto.PharmacyId}");
+
+        // ← تسجيل إنشاء سجل الصرف
+        await _auditService.LogAsync(
+            action: "CreateDispenseRecord",
+            entityName: "DispenseRecord",
+            entityId: addedDispenseRecord.Id.ToString(),
+            details: $"DispenseRecord created for PrescriptionId: {dispenseRecordDto.PrescriptionId}");
+
         return new DispenseRecordDto
         {
             Id = addedDispenseRecord.Id,
@@ -274,7 +319,24 @@ public class DispenseRecordService : IDispenseRecordService
     public async Task<DispenseRecordDto> UpdateAsync(int id, CreateDispenseRecordDto dispenseRecordDto)
     {
         var existingDispenseRecord = await _dispenseRecordRepository.GetByIdAsync(id);
-        if (existingDispenseRecord == null) return null;
+        
+        if (existingDispenseRecord == null)
+        {
+            // ← تسجيل فشل التحديث (السجل غير موجود)
+            await _auditService.LogAsync(
+                action: "UpdateDispenseRecordFailed",
+                entityName: "DispenseRecord",
+                entityId: id.ToString(),
+                details: $"Failed to update DispenseRecord - Record with ID {id} not found");
+
+            return null;
+        }
+
+        // حفظ القيم القديمة للتسجيل
+        var oldPrescriptionId = existingDispenseRecord.PrescriptionId;
+        var oldPharmacistId = existingDispenseRecord.PharmacistId;
+        var oldPharmacyId = existingDispenseRecord.PharmacyId;
+        var oldDispensedDate = existingDispenseRecord.DispensedDate;
 
         existingDispenseRecord.PrescriptionId = dispenseRecordDto.PrescriptionId;
         existingDispenseRecord.PharmacistId = dispenseRecordDto.PharmacistId;
@@ -282,6 +344,24 @@ public class DispenseRecordService : IDispenseRecordService
         existingDispenseRecord.DispensedDate = dispenseRecordDto.DispensedDate;
 
         DispenseRecord DispenseRecord = await _dispenseRecordRepository.UpdateAsync(existingDispenseRecord);
+
+        var changes = new List<string>();
+        if (oldPrescriptionId != dispenseRecordDto.PrescriptionId)
+            changes.Add($"PrescriptionId: {oldPrescriptionId} -> {dispenseRecordDto.PrescriptionId}");
+        if (oldPharmacistId != dispenseRecordDto.PharmacistId)
+            changes.Add($"PharmacistId: {oldPharmacistId} -> {dispenseRecordDto.PharmacistId}");
+        if (oldPharmacyId != dispenseRecordDto.PharmacyId)
+            changes.Add($"PharmacyId: {oldPharmacyId} -> {dispenseRecordDto.PharmacyId}");
+        if (oldDispensedDate != dispenseRecordDto.DispensedDate)
+            changes.Add($"DispensedDate: {oldDispensedDate} -> {dispenseRecordDto.DispensedDate}");
+
+        await _auditService.LogAsync(
+            action: "UpdateDispenseRecord",
+            entityName: "DispenseRecord",
+            entityId: id.ToString(),
+            details: $"DispenseRecord updated. Changes: {(changes.Any() ? string.Join(", ", changes) : "No changes")}");
+
+
         return new DispenseRecordDto
         {
             Id = DispenseRecord.Id,
@@ -294,7 +374,36 @@ public class DispenseRecordService : IDispenseRecordService
 
     public async Task<bool> DeleteAsync(int id)
     {
-        return await _dispenseRecordRepository.DeleteAsync(id);
+        var existingRecord = await _dispenseRecordRepository.GetByIdAsync(id);
+
+        if (existingRecord == null)
+        {
+            // ← تسجيل فشل الحذف (السجل غير موجود)
+            await _auditService.LogAsync(
+                action: "DeleteDispenseRecordFailed",
+                entityName: "DispenseRecord",
+                entityId: id.ToString(),
+                details: $"Failed to delete DispenseRecord - Record with ID {id} not found");
+
+            return false;
+        }
+
+        // حفظ معلومات السجل قبل الحذف للتسجيل
+        var prescriptionId = existingRecord.PrescriptionId;
+
+        var result = await _dispenseRecordRepository.DeleteAsync(id);
+
+        if (result)
+        {
+            // ← تسجيل نجاح الحذف
+            await _auditService.LogAsync(
+                action: "DeleteDispenseRecord",
+                entityName: "DispenseRecord",
+                entityId: id.ToString(),
+                details: $"DispenseRecord deleted successfully - Was associated with PrescriptionId: {prescriptionId}");
+        }
+
+        return result;
     }
 
     public async Task<List<DispenseRecordDto>> GetByPharmacyIdAsync(int PharmacyId)

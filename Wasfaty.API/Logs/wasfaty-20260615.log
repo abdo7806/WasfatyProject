@@ -1,0 +1,51 @@
+2026-06-15 23:07:12.865 [DBG] Request started: GET /swagger/v1/swagger.json with CorrelationId: e846e517-2a82-4252-b595-06297437ca05
+2026-06-15 23:07:13.682 [DBG] Request completed: GET /swagger/v1/swagger.json with StatusCode: 200
+2026-06-15 23:15:55.252 [DBG] Request started: GET /swagger/v1/swagger.json with CorrelationId: 6eb1d838-0a20-4689-a7c7-03fa3ccc8c2e
+2026-06-15 23:15:55.945 [DBG] Request completed: GET /swagger/v1/swagger.json with StatusCode: 200
+2026-06-15 23:18:07.303 [DBG] Request started: OPTIONS /api/Auth/login with CorrelationId: b4562632-28c9-45e3-b445-7513f1423364
+2026-06-15 23:18:07.333 [DBG] Request completed: OPTIONS /api/Auth/login with StatusCode: 204
+2026-06-15 23:18:07.360 [DBG] Request started: POST /api/Auth/login with CorrelationId: 0f5d2b03-bcc1-4060-afd5-ced3dcf8c06e
+2026-06-15 23:18:11.943 [DBG] AuthenticationScheme: Bearer was not authenticated.
+2026-06-15 23:18:14.069 [DBG] Audit log created: LoginSuccess on User (Id: 1) by User: null
+2026-06-15 23:18:14.154 [INF] HTTP POST /api/Auth/login responded 200 in 2102.2329 ms
+2026-06-15 23:18:14.176 [DBG] Request completed: POST /api/Auth/login with StatusCode: 200
+2026-06-15 23:18:32.598 [DBG] Request started: OPTIONS /api/Admin/dashboard with CorrelationId: 36d47c91-c60d-4594-ac3e-3972109b84d6
+2026-06-15 23:18:32.612 [DBG] Request completed: OPTIONS /api/Admin/dashboard with StatusCode: 204
+2026-06-15 23:18:32.659 [DBG] Request started: GET /api/Admin/dashboard with CorrelationId: 0ae2234a-d3d5-4963-90e1-c9511b49aa48
+2026-06-15 23:18:32.803 [DBG] Successfully validated the token.
+2026-06-15 23:18:32.810 [DBG] AuthenticationScheme: Bearer was successfully authenticated.
+2026-06-15 23:18:33.063 [INF] HTTP GET /api/Admin/dashboard responded 200 in 217.1333 ms
+2026-06-15 23:18:33.080 [DBG] Request completed: GET /api/Admin/dashboard with StatusCode: 200
+2026-06-15 23:28:52.050 [DBG] Request started: GET /api/Audit with CorrelationId: edb0f81f-61a3-4663-a82a-b6dba5a83f96
+2026-06-15 23:28:52.066 [DBG] AuthenticationScheme: Bearer was not authenticated.
+2026-06-15 23:28:52.080 [INF] AuthenticationScheme: Bearer was challenged.
+2026-06-15 23:28:52.085 [DBG] Request completed: GET /api/Audit with StatusCode: 401
+2026-06-15 23:29:14.122 [DBG] Request started: OPTIONS /api/Admin/dashboard with CorrelationId: 23131161-c537-431b-b4d5-cc19280f55c7
+2026-06-15 23:29:14.136 [DBG] Request completed: OPTIONS /api/Admin/dashboard with StatusCode: 204
+2026-06-15 23:29:14.157 [DBG] Request started: GET /api/Admin/dashboard with CorrelationId: 953c1239-5488-4894-aa43-9e3a82cf0016
+2026-06-15 23:29:14.185 [INF] Failed to validate the token.
+Microsoft.IdentityModel.Tokens.SecurityTokenExpiredException: IDX10223: Lifetime validation failed. The token is expired. ValidTo (UTC): '6/15/2026 8:19:13 PM', Current time (UTC): '6/15/2026 8:29:14 PM'.
+   at Microsoft.IdentityModel.Tokens.ValidatorUtilities.ValidateLifetime(Nullable`1 notBefore, Nullable`1 expires, SecurityToken securityToken, TokenValidationParameters validationParameters)
+   at Microsoft.IdentityModel.Tokens.Validators.ValidateLifetime(Nullable`1 notBefore, Nullable`1 expires, SecurityToken securityToken, TokenValidationParameters validationParameters)
+   at Microsoft.IdentityModel.JsonWebTokens.JsonWebTokenHandler.ValidateTokenPayloadAsync(JsonWebToken jsonWebToken, TokenValidationParameters validationParameters, BaseConfiguration configuration)
+   at Microsoft.IdentityModel.JsonWebTokens.JsonWebTokenHandler.ValidateJWSAsync(JsonWebToken jsonWebToken, TokenValidationParameters validationParameters, BaseConfiguration configuration)
+2026-06-15 23:29:14.231 [INF] Bearer was not authenticated. Failure message: IDX10223: Lifetime validation failed. The token is expired. ValidTo (UTC): '6/15/2026 8:19:13 PM', Current time (UTC): '6/15/2026 8:29:14 PM'.
+2026-06-15 23:29:14.328 [INF] AuthenticationScheme: Bearer was challenged.
+2026-06-15 23:29:14.337 [DBG] Request completed: GET /api/Admin/dashboard with StatusCode: 401
+2026-06-15 23:29:14.364 [DBG] Request started: OPTIONS /api/Auth/refresh with CorrelationId: 50dcdc49-3b02-4ec6-8595-63f2374988db
+2026-06-15 23:29:14.385 [DBG] Request completed: OPTIONS /api/Auth/refresh with StatusCode: 204
+2026-06-15 23:29:14.412 [DBG] Request started: POST /api/Auth/refresh with CorrelationId: efcd0f6c-ac8d-4e9e-baec-354d04e138a1
+2026-06-15 23:29:14.429 [DBG] AuthenticationScheme: Bearer was not authenticated.
+2026-06-15 23:29:14.865 [DBG] Audit log created: RefreshToken on User (Id: 1) by User: null
+2026-06-15 23:29:14.888 [INF] HTTP POST /api/Auth/refresh responded 200 in 443.8608 ms
+2026-06-15 23:29:14.903 [DBG] Request completed: POST /api/Auth/refresh with StatusCode: 200
+2026-06-15 23:29:14.919 [DBG] Request started: GET /api/Admin/dashboard with CorrelationId: 4f4d8a1f-2483-40f0-9b19-de5139b6477e
+2026-06-15 23:29:14.930 [DBG] Successfully validated the token.
+2026-06-15 23:29:14.941 [DBG] AuthenticationScheme: Bearer was successfully authenticated.
+2026-06-15 23:29:14.992 [INF] HTTP GET /api/Admin/dashboard responded 200 in 41.7671 ms
+2026-06-15 23:29:15.002 [DBG] Request completed: GET /api/Admin/dashboard with StatusCode: 200
+2026-06-15 23:29:37.336 [DBG] Request started: GET /api/Audit with CorrelationId: b879bf26-cb1c-4c06-9406-9899d29a1412
+2026-06-15 23:29:37.341 [DBG] Successfully validated the token.
+2026-06-15 23:29:37.343 [DBG] AuthenticationScheme: Bearer was successfully authenticated.
+2026-06-15 23:29:37.499 [INF] HTTP GET /api/Audit responded 200 in 148.6452 ms
+2026-06-15 23:29:37.511 [DBG] Request completed: GET /api/Audit with StatusCode: 200

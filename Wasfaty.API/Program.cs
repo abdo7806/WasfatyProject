@@ -34,9 +34,23 @@ using Wasfaty.Infrastructure.Repositories;
 using Wasfaty.Infrastructure.Seeders;
 using Wasfaty.Infrastructure.Services;
 using Wasfaty.Infrastructure.Services.EmailServices;
+using Serilog;
+using Serilog.Events;
+using Wasfaty.API.Middlewares;
+
+// Bootstrap Logger
+Log.Logger = new LoggerConfiguration()
+    .WriteTo.Console()
+    .CreateBootstrapLogger();
 
 var builder = WebApplication.CreateBuilder(args);
 
+// إضافة Serilog
+builder.Host.UseSerilog((context, services, configuration) => configuration
+    .ReadFrom.Configuration(context.Configuration)
+    .ReadFrom.Services(services)
+    .Enrich.FromLogContext()
+    .Enrich.WithProperty("Environment", context.HostingEnvironment.EnvironmentName));
 
 
 // =============  إعدادات CORS الصحيحة =============
@@ -201,12 +215,13 @@ var rateLimitingSettings = builder.Configuration.GetSection("RateLimiting").Get<
 
 builder.Services.AddRateLimiter(options =>
 {
+
     // ---------------------- 1. سياسة عامة لجميع الـ endpoints ----------------------
     options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(
         httpContext =>
         {
             var key = httpContext.User.Identity?.IsAuthenticated == true
-               ? httpContext.User.FindFirstValue(ClaimTypes.NameIdentifier)
+               ? httpContext.User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty
                : httpContext.Connection.RemoteIpAddress?.ToString()
                  ?? "anonymous";
 
@@ -218,7 +233,7 @@ builder.Services.AddRateLimiter(options =>
                          Window = TimeSpan.FromMinutes(rateLimitingSettings.Global.WindowMinutes),
                          QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
                          QueueLimit = rateLimitingSettings.Global.QueueLimit
-                     });
+                     }) ;
         });
 
     // ---------------------- 2. سياسة شديدة لـ Auth ----------------------
@@ -411,6 +426,11 @@ builder.Services.AddScoped<IAdminRepository, AdminRepository>();
 builder.Services.AddScoped<IAdminService, AdminService>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
+builder.Services.AddScoped<IAuditLogRepository, AuditLogRepository>();
+builder.Services.AddScoped<IAuditService, AuditService>();
+
+builder.Services.AddHttpContextAccessor();
+
 
 // Email Services
 builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
@@ -450,6 +470,7 @@ builder.Services.AddSwaggerGen(options =>
 
 var app = builder.Build();
 
+
 // ============= 8. Database Migration =============
 using (var scope = app.Services.CreateScope())
 {
@@ -470,6 +491,9 @@ using (var scope = app.Services.CreateScope())
         Console.WriteLine($"Migration error: {ex.Message}");
     }
 }
+// إضافة الـ Middlewares (الترتيب مهم جداً!)
+app.UseMiddleware<CorrelationIdMiddleware>();
+app.UseMiddleware<GlobalExceptionMiddleware>();
 
 // ============= 9. Middleware Pipeline (الترتيب مهم جداً!) =============
 
@@ -518,6 +542,19 @@ app.MapGet("/weatherforecast", () =>
     return forecast;
 })
 .WithName("GetWeatherForecast");
+
+// إضافة Request Logging
+app.UseSerilogRequestLogging(options =>
+{
+    options.MessageTemplate = "HTTP {RequestMethod} {RequestPath} responded {StatusCode} in {Elapsed:0.0000} ms";
+    options.GetLevel = (httpContext, elapsed, ex) =>
+    {
+        if (ex != null) return LogEventLevel.Error;
+        if (httpContext.Response.StatusCode >= 500) return LogEventLevel.Error;
+        if (httpContext.Response.StatusCode >= 400) return LogEventLevel.Warning;
+        return LogEventLevel.Information;
+    };
+});
 
 app.Run();
 

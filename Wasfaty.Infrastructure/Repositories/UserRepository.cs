@@ -30,17 +30,14 @@ namespace Wasfaty.Infrastructure.Repositories
                 .Include(u => u.Role)
                 .FirstOrDefaultAsync(u => u.Id == id);
         }
-        public async Task<IEnumerable<UserDto>> GetAllAsync()
+        public async Task<IEnumerable<User>> GetAllAsync()
         {
-            return await _context.Users
-                .Select(user => new UserDto
-                {
-                    Id = user.Id,
-                    FullName = user.FullName,
-                    Email = user.Email,
-                    Role = (UserRoleEnum)user.RoleId,
-                    CreatedAt = user.CreatedAt
-                }).ToListAsync();
+            return await _context.Users.ToListAsync();
+        }
+
+        public async Task<User?> GetByEmailAsync(string email)// ارجاع المستخدم حسب الايمال
+        {
+            return await _context.Users.Include(mc => mc.Role).FirstOrDefaultAsync(u => u.Email == email);
         }
 
         public async Task<User> AddAsync(User user)

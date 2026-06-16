@@ -20,12 +20,16 @@ public class PharmacistService : IPharmacistService
     private readonly IPharmacistRepository _pharmacistRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IUserRepository _userRepository;
+    private readonly IAuditService _auditService;
 
-    public PharmacistService(IPharmacistRepository pharmacistRepository, IUnitOfWork unitOfWork, IUserRepository userRepository)
+    public PharmacistService(IPharmacistRepository pharmacistRepository, 
+        IUnitOfWork unitOfWork, IUserRepository userRepository, 
+        IAuditService auditService)
     {
         _pharmacistRepository = pharmacistRepository;
         _unitOfWork = unitOfWork;
         _userRepository = userRepository;
+        _auditService = auditService;
     }
 
     public async Task<PharmacistDto?> GetByIdAsync(int id)
@@ -113,6 +117,21 @@ public class PharmacistService : IPharmacistService
 
         try
         {
+            // التحقق من وجود البريد الإلكتروني مسبقاً
+            var existingUser = await _userRepository.GetByEmailAsync(pharmacistDto.Email);
+            if (existingUser != null)
+            {
+                await _unitOfWork.RollbackAsync();
+
+                // ← تسجيل فشل الإنشاء (بريد موجود)
+                await _auditService.LogAsync(
+                    action: "CreatePharmacistFailed",
+                    entityName: "Pharmacist",
+                    details: $"Failed to create pharmacist - Email already exists: {pharmacistDto.Email}");
+
+                return null;
+            }
+
             var user = new User
             {
                 FullName = pharmacistDto.FullName,
@@ -123,8 +142,18 @@ public class PharmacistService : IPharmacistService
             };
 
             var createdUser = await _userRepository.AddAsync(user);
-            if (createdUser == null) return null;
+            if (createdUser == null)
+            {
+                await _unitOfWork.RollbackAsync();
 
+                // ← تسجيل فشل الإنشاء (فشل إنشاء المستخدم)
+                await _auditService.LogAsync(
+                    action: "CreatePharmacistFailed",
+                    entityName: "Pharmacist",
+                    details: $"Failed to create pharmacist - User creation failed for email: {pharmacistDto.Email}");
+
+                return null;
+            }
 
 
             var pharmacist = new Pharmacist
@@ -134,52 +163,96 @@ public class PharmacistService : IPharmacistService
                 LicenseNumber = pharmacistDto.LicenseNumber,
             };
 
-            var createPharmacist = await _pharmacistRepository.AddAsync(pharmacist);
-            if (createPharmacist == null) return null;
+            var createdPharmacist = await _pharmacistRepository.AddAsync(pharmacist);
+            if (createdPharmacist == null)
+            {
+                await _unitOfWork.RollbackAsync();
+
+                // ← تسجيل فشل الإنشاء (فشل إنشاء الصيدلي)
+                await _auditService.LogAsync(
+                    action: "CreatePharmacistFailed",
+                    entityName: "Pharmacist",
+                    details: $"Failed to create pharmacist - Pharmacist creation failed for UserId: {createdUser.Id}");
+
+                return null;
+            }
 
             // كل شيء نجح → نثبت العملية
             await _unitOfWork.CommitAsync();
 
+            await _auditService.LogAsync(
+                 action: "CreatePharmacist",
+                 entityName: "Pharmacist",
+                 entityId: createdPharmacist.Id.ToString(),
+                 details: $"Pharmacist created successfully - Name: {pharmacistDto.FullName}, Email: {pharmacistDto.Email}, LicenseNumber: {pharmacistDto.LicenseNumber}, PharmacyId: {pharmacistDto.PharmacyId}");
+
             return new PharmacistDto
             {
-                Id = createPharmacist.Id,
-                UserId = createPharmacist.UserId,
-                PharmacyId = createPharmacist.PharmacyId,
-                LicenseNumber = createPharmacist.LicenseNumber ?? "",
+                Id = createdPharmacist.Id,
+                UserId = createdPharmacist.UserId,
+                PharmacyId = createdPharmacist.PharmacyId,
+                LicenseNumber = createdPharmacist.LicenseNumber ?? "",
             };
         }
-        catch
+        catch (Exception ex)
         {
             // أي خطأ → نلغي كل شيء
             await _unitOfWork.RollbackAsync();
+
+            // ← تسجيل خطأ في الإنشاء
+            await _auditService.LogAsync(
+                action: "CreatePharmacistError",
+                entityName: "Pharmacist",
+                details: $"Error creating pharmacist - Email: {pharmacistDto.Email}, Error: {ex.Message}");
+
+            return null;
         }
 
-        return null;
 
     }
 
     public async Task<PharmacistDto> UpdateAsync(int id, UpdatePharmacistDto pharmacistDto)
     {
-
-        //var existingPharmacist = await _pharmacistRepository.GetByIdAsync(id);
-        //if (existingPharmacist == null) return null;
-
-        ////  existingPharmacist.UserId = existingPharmacist.UserId;
-        //existingPharmacist.LicenseNumber = pharmacistDto.LicenseNumber;
-        //existingPharmacist.PharmacyId = pharmacistDto.PharmacyId;
-        //Pharmacist Pharmacist = await _pharmacistRepository.UpdateAsync(existingPharmacist);
-
         await _unitOfWork.BeginTransactionAsync();
 
         try
         {
             var pharmacist = await _pharmacistRepository.GetByIdAsync(id);
             if (pharmacist == null)
+            {
+                await _unitOfWork.RollbackAsync();
+
+                // ← تسجيل فشل التحديث (الصيدلي غير موجود)
+                await _auditService.LogAsync(
+                    action: "UpdatePharmacistFailed",
+                    entityName: "Pharmacist",
+                    entityId: id.ToString(),
+                    details: $"Failed to update pharmacist - Pharmacist with ID {id} not found");
+
                 return null;
+            }
 
             var user = await _userRepository.GetByIdAsync(pharmacist.UserId);
             if (user == null)
+            {
+                await _unitOfWork.RollbackAsync();
+
+                // ← تسجيل فشل التحديث (المستخدم غير موجود)
+                await _auditService.LogAsync(
+                    action: "UpdatePharmacistFailed",
+                    entityName: "Pharmacist",
+                    entityId: id.ToString(),
+                    details: $"Failed to update pharmacist - User with ID {pharmacist.UserId} not found");
+
                 return null;
+            }
+
+            // حفظ القيم القديمة للتسجيل
+            var oldFullName = user.FullName;
+            var oldEmail = user.Email;
+            var oldLicenseNumber = pharmacist.LicenseNumber;
+            var oldPharmacyId = pharmacist.PharmacyId;
+
 
             // تحديث بيانات المستخدم
             user.FullName = pharmacistDto.FullName;
@@ -194,6 +267,19 @@ public class PharmacistService : IPharmacistService
             // كل شيء نجح → نثبت العملية
             await _unitOfWork.CommitAsync();
 
+            // ← تسجيل نجاح التحديث
+            var changes = new List<string>();
+            if (oldFullName != pharmacistDto.FullName) changes.Add($"Name: {oldFullName} -> {pharmacistDto.FullName}");
+            if (oldEmail != pharmacistDto.Email) changes.Add($"Email: {oldEmail} -> {pharmacistDto.Email}");
+            if (oldLicenseNumber != pharmacistDto.LicenseNumber) changes.Add($"LicenseNumber: {oldLicenseNumber} -> {pharmacistDto.LicenseNumber}");
+            if (oldPharmacyId != pharmacistDto.PharmacyId) changes.Add($"PharmacyId: {oldPharmacyId} -> {pharmacistDto.PharmacyId}");
+
+            await _auditService.LogAsync(
+                action: "UpdatePharmacist",
+                entityName: "Pharmacist",
+                entityId: id.ToString(),
+                details: $"Pharmacist updated. Changes: {(changes.Any() ? string.Join(", ", changes) : "No changes")}");
+
             return new PharmacistDto
             {
                 Id = pharmacist.Id,
@@ -202,16 +288,51 @@ public class PharmacistService : IPharmacistService
                 LicenseNumber = pharmacist.LicenseNumber,
             };
         }
-        catch
+        catch (Exception ex)
         {
             await _unitOfWork.RollbackAsync();
+
+            // ← تسجيل خطأ في التحديث
+            await _auditService.LogAsync(
+                action: "UpdatePharmacistError",
+                entityName: "Pharmacist",
+                entityId: id.ToString(),
+                details: $"Error updating pharmacist ID {id} - Error: {ex.Message}");
+
+            return null;
         }
-        return null;
     }
 
     public async Task<bool> DeleteAsync(int id)
     {
-       return await _pharmacistRepository.DeleteAsync(id);
+        var pharmacist = await _pharmacistRepository.GetByIdAsync(id);
+
+        if (pharmacist == null)
+        {
+            // ← تسجيل فشل الحذف (الصيدلي غير موجود)
+            await _auditService.LogAsync(
+                action: "DeletePharmacistFailed",
+                entityName: "Pharmacist",
+                entityId: id.ToString(),
+                details: $"Failed to delete pharmacist - Pharmacist with ID {id} not found");
+
+            return false;
+        }
+
+        var pharmacistName = pharmacist.User?.FullName ?? "Unknown";
+        var result = await _pharmacistRepository.DeleteAsync(id);
+
+        if (result)
+        {
+            // ← تسجيل نجاح الحذف
+            await _auditService.LogAsync(
+                action: "DeletePharmacist",
+                entityName: "Pharmacist",
+                entityId: id.ToString(),
+                details: $"Pharmacist deleted successfully - Name: {pharmacistName}");
+        }
+
+        return result;
     }
 
     public async Task<List<PharmacistDto>> GetByPharmacyIdAsync(int PharmacyId)
