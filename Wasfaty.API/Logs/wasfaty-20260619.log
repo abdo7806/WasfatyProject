@@ -1,0 +1,8 @@
+2026-06-19 20:50:27.949 [INF] Audit Cleanup Service started. Interval: 24h, Retention: 730 days
+2026-06-19 20:50:28.128 [DBG] No old audit logs found for cleanup
+2026-06-19 20:50:29.886 [DBG] Request started: GET /swagger/v1/swagger.json with CorrelationId: 2e413f86-94b9-4e1f-a20f-88b3a7f95a55
+2026-06-19 20:50:30.120 [DBG] Request completed: GET /swagger/v1/swagger.json with StatusCode: 200
+2026-06-19 20:52:34.823 [INF] Audit Cleanup Service started. Interval: 24h, Retention: 730 days
+2026-06-19 20:52:34.991 [DBG] No old audit logs found for cleanup
+2026-06-19 20:52:36.158 [DBG] Request started: GET /swagger/v1/swagger.json with CorrelationId: d262afff-3d3f-4a7c-bd39-c5a7a4993c7f
+2026-06-19 20:52:36.413 [DBG] Request completed: GET /swagger/v1/swagger.json with StatusCode: 200

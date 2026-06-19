@@ -1,0 +1,16 @@
+2026-06-17 22:15:26.885 [DBG] Request started: GET /index.html with CorrelationId: 71212da7-19e0-40e8-a68c-807ce884a734
+2026-06-17 22:15:27.267 [DBG] Request completed: GET /index.html with StatusCode: 200
+2026-06-17 22:15:27.310 [DBG] Request started: GET /swagger-ui.css with CorrelationId: 0f853b2c-b963-4e66-9625-ab6347f31fd6
+2026-06-17 22:15:27.339 [DBG] Request started: GET /index.js with CorrelationId: 5e51363e-d22d-4a16-88dc-8605c1f2f4e1
+2026-06-17 22:15:27.310 [DBG] Request started: GET /swagger-ui-bundle.js with CorrelationId: d6df2293-939f-48f9-8001-097878c0beac
+2026-06-17 22:15:27.339 [DBG] Request started: GET /index.css with CorrelationId: 895b02da-6f55-4348-a14d-b19306920c71
+2026-06-17 22:15:27.507 [DBG] Request completed: GET /index.js with StatusCode: 200
+2026-06-17 22:15:27.394 [DBG] Request started: GET /swagger-ui-standalone-preset.js with CorrelationId: 2d7c871e-4729-4b18-bb7f-8c5cf223e11f
+2026-06-17 22:15:27.545 [DBG] Request completed: GET /index.css with StatusCode: 200
+2026-06-17 22:15:27.569 [DBG] Request completed: GET /swagger-ui.css with StatusCode: 200
+2026-06-17 22:15:27.582 [DBG] Request completed: GET /swagger-ui-standalone-preset.js with StatusCode: 200
+2026-06-17 22:15:27.646 [DBG] Request completed: GET /swagger-ui-bundle.js with StatusCode: 200
+2026-06-17 22:15:28.086 [DBG] Request started: GET /swagger/v1/swagger.json with CorrelationId: 870d78f9-2852-4888-9fd8-52b6cca18921
+2026-06-17 22:15:28.105 [DBG] Request started: GET /favicon-32x32.png with CorrelationId: d12531ba-0a38-4f02-80a9-3c482ae41ec7
+2026-06-17 22:15:28.110 [DBG] Request completed: GET /favicon-32x32.png with StatusCode: 200
+2026-06-17 22:15:28.913 [DBG] Request completed: GET /swagger/v1/swagger.json with StatusCode: 200

@@ -53,7 +53,9 @@ namespace Wasfaty.Infrastructure.Services
                     EntityName = entityName,
                     EntityId = entityId,
                     IpAddress = ipAddress,
-                    UserAgent = userAgent,
+                    UserAgent = !string.IsNullOrEmpty(userAgent) && userAgent.Length > 200
+                                                 ? userAgent.Substring(0, 200)
+                                                 : userAgent,
                     Details = details,
                     CreatedAtUtc = DateTime.UtcNow
                 };

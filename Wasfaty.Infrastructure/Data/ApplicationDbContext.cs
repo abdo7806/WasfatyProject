@@ -142,6 +142,12 @@ public class ApplicationDbContext : DbContext
       .HasForeignKey(rt => rt.UserId)
       .OnDelete(DeleteBehavior.Cascade);
 
+        modelBuilder.Entity<AuditLog>().Property(x => x.Action)
+    .HasMaxLength(100);
+
+        modelBuilder.Entity<AuditLog>().Property(x => x.EntityName)
+            .HasMaxLength(100);
+
         // القيد اللي عندك
         modelBuilder.Entity<PrescriptionItem>()
             .HasCheckConstraint("CHK_PrescriptionItem_Medication",

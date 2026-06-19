@@ -15,6 +15,7 @@ public class AuthController : ControllerBase
 {
     private readonly IAuthService _authService;
     private readonly IOptions<CookieSettings> _cookieSettings;
+
     public AuthController(IAuthService authService, IOptions<CookieSettings> cookieSettings)
     {
         _authService = authService;

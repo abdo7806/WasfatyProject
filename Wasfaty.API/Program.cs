@@ -315,7 +315,7 @@ builder.Services.AddRateLimiter(options =>
         context.HttpContext.Response.StatusCode = StatusCodes.Status429TooManyRequests;
         context.HttpContext.Response.ContentType = "application/json";
 
-        // ✅ Logging - تسجيل محاولة التجاوز
+        //  Logging - تسجيل محاولة التجاوز
         var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<Program>>();
 
         var userId = context.HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "anonymous";
@@ -327,7 +327,7 @@ builder.Services.AddRateLimiter(options =>
             "🚨 Rate limit exceeded | UserId: {UserId} | IP: {IP} | {Method} {Path}",
             userId, ip, method, path);
 
-        // ✅ استخراج RetryAfter من Lease Metadata
+        //  استخراج RetryAfter من Lease Metadata
         double retryAfterSeconds = 60; // قيمة افتراضية
 
         if (context.Lease.TryGetMetadata(MetadataName.RetryAfter, out TimeSpan retryAfter))
@@ -335,7 +335,7 @@ builder.Services.AddRateLimiter(options =>
             retryAfterSeconds = Math.Ceiling(retryAfter.TotalSeconds);
         }
 
-        // ✅ إضافة Headers للـ Frontend
+        //  إضافة Headers للـ Frontend
         var resetTime = DateTimeOffset.UtcNow.AddSeconds(retryAfterSeconds);
 
         context.HttpContext.Response.Headers.Append("X-RateLimit-Remaining", "0");
@@ -344,10 +344,10 @@ builder.Services.AddRateLimiter(options =>
         context.HttpContext.Response.Headers.Append("Retry-After",
             retryAfterSeconds.ToString(NumberFormatInfo.InvariantInfo));
 
-        // ✅ جلب الإعدادات من DI Container
+        //  جلب الإعدادات من DI Container
         var settings = context.HttpContext.RequestServices.GetRequiredService<RateLimitingSettings>();
 
-        // ✅ تحديد الـ Limit حسب الـ Path
+        //  تحديد الـ Limit حسب الـ Path
         var currentPath = context.HttpContext.Request.Path.ToString();
         int limit;
 
@@ -374,7 +374,7 @@ builder.Services.AddRateLimiter(options =>
 
         context.HttpContext.Response.Headers.Append("X-RateLimit-Limit", limit.ToString());
 
-        // ✅ إرسال الـ Response Body
+        //  إرسال الـ Response Body
         await context.HttpContext.Response.WriteAsJsonAsync(new
         {
             status = 429,
@@ -467,6 +467,10 @@ builder.Services.AddSwaggerGen(options =>
         }
     });
 });
+
+// Hosted Services
+builder.Services.AddHostedService<AuditCleanupService>();
+
 
 var app = builder.Build();
 
