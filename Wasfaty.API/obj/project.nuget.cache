@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "SFOBEZDlstU=",
+  "dgSpecHash": "++yjJbB49r8=",
   "success": true,
   "projectFilePath": "D:\\كورسات ابو هد هود\\WasfatyProject2\\Wasfaty.API\\Wasfaty.API.csproj",
   "expectedPackageFiles": [
@@ -41,6 +41,9 @@
     "C:\\Users\\Zbook\\.nuget\\packages\\microsoft.extensions.dependencyinjection.abstractions\\10.0.0\\microsoft.extensions.dependencyinjection.abstractions.10.0.0.nupkg.sha512",
     "C:\\Users\\Zbook\\.nuget\\packages\\microsoft.extensions.dependencymodel\\10.0.0\\microsoft.extensions.dependencymodel.10.0.0.nupkg.sha512",
     "C:\\Users\\Zbook\\.nuget\\packages\\microsoft.extensions.diagnostics.abstractions\\10.0.0\\microsoft.extensions.diagnostics.abstractions.10.0.0.nupkg.sha512",
+    "C:\\Users\\Zbook\\.nuget\\packages\\microsoft.extensions.diagnostics.healthchecks\\9.0.4\\microsoft.extensions.diagnostics.healthchecks.9.0.4.nupkg.sha512",
+    "C:\\Users\\Zbook\\.nuget\\packages\\microsoft.extensions.diagnostics.healthchecks.abstractions\\9.0.4\\microsoft.extensions.diagnostics.healthchecks.abstractions.9.0.4.nupkg.sha512",
+    "C:\\Users\\Zbook\\.nuget\\packages\\microsoft.extensions.diagnostics.healthchecks.entityframeworkcore\\9.0.4\\microsoft.extensions.diagnostics.healthchecks.entityframeworkcore.9.0.4.nupkg.sha512",
     "C:\\Users\\Zbook\\.nuget\\packages\\microsoft.extensions.fileproviders.abstractions\\10.0.0\\microsoft.extensions.fileproviders.abstractions.10.0.0.nupkg.sha512",
     "C:\\Users\\Zbook\\.nuget\\packages\\microsoft.extensions.hosting.abstractions\\10.0.0\\microsoft.extensions.hosting.abstractions.10.0.0.nupkg.sha512",
     "C:\\Users\\Zbook\\.nuget\\packages\\microsoft.extensions.logging\\10.0.0\\microsoft.extensions.logging.10.0.0.nupkg.sha512",

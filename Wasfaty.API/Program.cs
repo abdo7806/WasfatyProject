@@ -37,6 +37,8 @@ using Wasfaty.Infrastructure.Services.EmailServices;
 using Serilog;
 using Serilog.Events;
 using Wasfaty.API.Middlewares;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 
 // Bootstrap Logger
 Log.Logger = new LoggerConfiguration()
@@ -471,9 +473,76 @@ builder.Services.AddSwaggerGen(options =>
 // Hosted Services
 builder.Services.AddHostedService<AuditCleanupService>();
 
+// ============= Health Checks (الحد الأدنى الاحترافي) =============
+
+builder.Services.AddHealthChecks()
+    .AddDbContextCheck<ApplicationDbContext>(
+        name: "database",
+        tags: new[] { "ready" });
 
 var app = builder.Build();
 
+
+// ============= Health Check Endpoints =============
+
+// Liveness - هل التطبيق شغال؟
+app.MapHealthChecks("/health/live", new HealthCheckOptions
+{
+    Predicate = _ => false // ما يفحص شيء، يرد 200 OK فقط
+});
+
+//  Readiness - هل التطبيق جاهز للعمل؟
+app.MapHealthChecks("/health/ready", new HealthCheckOptions
+{
+    Predicate = _ => true, // يفحص كل شيء مسجل
+    ResponseWriter = async (context, report) =>
+    {
+        context.Response.ContentType = "application/json";
+
+        var isHealthy = report.Status == HealthStatus.Healthy;
+        context.Response.StatusCode = isHealthy ? 200 : 503;
+
+        var response = new
+        {
+            status = report.Status.ToString(),
+            timestamp = DateTime.UtcNow,
+            isReady = isHealthy,
+            checks = report.Entries.Select(x => new
+            {
+                name = x.Key,
+                status = x.Value.Status.ToString(),
+                description = x.Value.Description
+            })
+        };
+
+        await context.Response.WriteAsJsonAsync(response);
+    }
+});
+
+// Health كامل
+app.MapHealthChecks("/health", new HealthCheckOptions
+{
+    ResponseWriter = async (context, report) =>
+    {
+        context.Response.ContentType = "application/json";
+
+        var response = new
+        {
+            status = report.Status.ToString(),
+            timestamp = DateTime.UtcNow,
+            checks = report.Entries.Select(x => new
+            {
+                name = x.Key,
+                status = x.Value.Status.ToString(),
+                description = x.Value.Description,
+                duration = x.Value.Duration.TotalMilliseconds
+            }),
+            totalDuration = report.TotalDuration.TotalMilliseconds
+        };
+
+        await context.Response.WriteAsJsonAsync(response);
+    }
+});
 
 // ============= 8. Database Migration =============
 using (var scope = app.Services.CreateScope())
@@ -498,7 +567,18 @@ using (var scope = app.Services.CreateScope())
 // إضافة الـ Middlewares (الترتيب مهم جداً!)
 app.UseMiddleware<CorrelationIdMiddleware>();
 app.UseMiddleware<GlobalExceptionMiddleware>();
-
+// إضافة Request Logging
+app.UseSerilogRequestLogging(options =>
+{
+    options.MessageTemplate = "HTTP {RequestMethod} {RequestPath} responded {StatusCode} in {Elapsed:0.0000} ms";
+    options.GetLevel = (httpContext, elapsed, ex) =>
+    {
+        if (ex != null) return LogEventLevel.Error;
+        if (httpContext.Response.StatusCode >= 500) return LogEventLevel.Error;
+        if (httpContext.Response.StatusCode >= 400) return LogEventLevel.Warning;
+        return LogEventLevel.Information;
+    };
+});
 // ============= 9. Middleware Pipeline (الترتيب مهم جداً!) =============
 
 if (app.Environment.IsDevelopment())
@@ -523,8 +603,6 @@ app.UseHttpsRedirection();
 
 //app.UseCors("AllowFrontend");  // ? استخدم السياسة الصحيحة فقط
 app.UseCors("AllowSpecific");// الكل
-
-
 app.UseCookiePolicy();          // ? مهم جداً للـ Cookies
 app.UseAuthentication();        // ? التحقق من JWT
 app.UseAuthorization();         // ? التحقق من الصلاحيات
@@ -547,18 +625,7 @@ app.MapGet("/weatherforecast", () =>
 })
 .WithName("GetWeatherForecast");
 
-// إضافة Request Logging
-app.UseSerilogRequestLogging(options =>
-{
-    options.MessageTemplate = "HTTP {RequestMethod} {RequestPath} responded {StatusCode} in {Elapsed:0.0000} ms";
-    options.GetLevel = (httpContext, elapsed, ex) =>
-    {
-        if (ex != null) return LogEventLevel.Error;
-        if (httpContext.Response.StatusCode >= 500) return LogEventLevel.Error;
-        if (httpContext.Response.StatusCode >= 400) return LogEventLevel.Warning;
-        return LogEventLevel.Information;
-    };
-});
+
 
 app.Run();
 
